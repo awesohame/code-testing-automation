@@ -189,7 +189,7 @@ const CodeAnalyzerPanel: React.FC<CodeAnalyzerPanelProps> = ({
     console.log(returns);
 
     try {
-      const response = await axios.post("http://localhost:3000", returns, {
+      const response = await axios.post("http://localhost:3000/update", returns, {
         headers: {
           "Content-Type": "application/json",
         },
@@ -238,18 +238,17 @@ const CodeAnalyzerPanel: React.FC<CodeAnalyzerPanelProps> = ({
                   {["test", "instructions", "coverage"].map((tab) => (
                     <button
                       key={tab}
-                      className={`px-4 py-2 text-sm ${
-                        activeTab === tab
+                      className={`px-4 py-2 text-sm ${activeTab === tab
                           ? "text-green-400 border-b-2 border-green-400"
                           : "text-gray-500 hover:text-gray-300"
-                      }`}
+                        }`}
                       onClick={() => setActiveTab(tab as any)}
                     >
                       {tab === "test"
                         ? "Test Code"
                         : tab === "instructions"
-                        ? "Setup Instructions"
-                        : "Coverage Analysis"}
+                          ? "Setup Instructions"
+                          : "Coverage Analysis"}
                     </button>
                   ))}
                 </div>
