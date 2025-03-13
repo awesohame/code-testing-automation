@@ -1,12 +1,22 @@
-import { Button } from "@/components/ui/button";
+import React from "react";
+import { Routes, Route } from "react-router-dom";
+import RepoSelectionPage from "./pages/RepoSelectingPage";
+import RepoViewerPage from "./pages/RepoViewerPage";
 
-function App() {
+const App: React.FC = () => {
+  const handleRepoSubmit = (owner: string, name: string) => {
+    console.log("Selected Repo:", owner, name);
+  };
+
   return (
-    <div className="bg-amber-100 text-blue-500 flex w-screen h-screen items-center justify-center">
-      Testing 
-      <Button>Tailwind</Button>
-    </div>
+    <Routes>
+      <Route
+        path="/"
+        element={<RepoSelectionPage onSubmit={handleRepoSubmit} />}
+      />
+      <Route path="/repo/:repoOwner/:repoName" element={<RepoViewerPage />} />
+    </Routes>
   );
-}
+};
 
 export default App;
