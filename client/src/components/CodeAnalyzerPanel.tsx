@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { GitHubContentItem } from '@/types';
-import { GoogleGenerativeAI, SchemaType } from '@google/generative-ai';
-import { languageMap } from '@/lib/constants';
+import React, { useState, useEffect } from "react";
+import { GitHubContentItem } from "@/types";
+import { GoogleGenerativeAI, SchemaType } from "@google/generative-ai";
+import { languageMap } from "@/lib/constants";
+import axios from "axios";
 
 interface CodeAnalyzerPanelProps {
   selectedFile: GitHubContentItem | null;
@@ -13,6 +14,7 @@ interface TestGenerationResult {
   language: string;
   testCode: string;
   instructions: string;
+  newFile: string;
   coverage: {
     percentage: number;
     coveredFunctions: string[];
@@ -34,11 +36,13 @@ const schema = {
     },
     instructions: {
       type: SchemaType.STRING,
-      description: "Detailed instructions on how to set up and run the tests in a local environment",
+      description:
+        "Detailed instructions on how to set up and run the tests in a local environment",
     },
-    newFile:{
+    newFile: {
       type: SchemaType.STRING,
-      description: "the name of the file to be created in order to paste the test code into"
+      description:
+        "the name of the file to be created in order to paste the test code into",
     },
     coverage: {
       type: SchemaType.OBJECT,
@@ -70,48 +74,58 @@ const schema = {
       required: ["percentage", "coveredFunctions", "uncoveredAreas", "notes"],
     },
   },
-  required: ["language", "testCode", "instructions", "coverage"],
+  required: ["language", "testCode", "newFile", "instructions", "coverage"],
 };
 
-const CodeAnalyzerPanel: React.FC<CodeAnalyzerPanelProps> = ({ selectedFile, fileContent }) => {
-  const [testResult, setTestResult] = useState<TestGenerationResult | null>(null);
+const CodeAnalyzerPanel: React.FC<CodeAnalyzerPanelProps> = ({
+  selectedFile,
+  fileContent,
+}) => {
+  const [testResult, setTestResult] = useState<TestGenerationResult | null>(
+    null
+  );
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
-  const [error, setError] = useState<string>('');
-  const [activeTab, setActiveTab] = useState<'test' | 'instructions' | 'coverage'>('test');
+  const [error, setError] = useState<string>("");
+  const [activeTab, setActiveTab] = useState<
+    "test" | "instructions" | "coverage"
+  >("test");
 
   // Initialize the Google Generative AI client
   // API key should be stored in environment variables in production
-  const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY || '');
+  const genAI = new GoogleGenerativeAI(
+    import.meta.env.VITE_GEMINI_API_KEY || ""
+  );
 
   // Generate test when file content changes
   useEffect(() => {
-    if (selectedFile && fileContent && fileContent !== 'Error loading file content') {
+    if (
+      selectedFile &&
+      fileContent &&
+      fileContent !== "Error loading file content"
+    ) {
       generateTest();
     } else {
       setTestResult(null);
-      setError('');
+      setError("");
     }
   }, [selectedFile, fileContent]);
 
   const getFileLanguage = (filename: string): string => {
-    const extension = filename?.split('.').pop()?.toLowerCase() || '';
-    
-    
-    
-    return languageMap[extension] || 'Unknown';
+    const extension = filename?.split(".").pop()?.toLowerCase() || "";
+
+    return languageMap[extension] || "Unknown";
   };
 
   const generateTest = async () => {
     if (!selectedFile || !fileContent) return;
 
     setIsGenerating(true);
-    setError('');
+    setError("");
 
     try {
-
       // Get the model with schema config
       const model = genAI.getGenerativeModel({
-        model: 'gemini-1.5-flash',
+        model: "gemini-2.0-flash",
         generationConfig: {
           responseMimeType: "application/json",
           responseSchema: schema as any,
@@ -120,7 +134,7 @@ const CodeAnalyzerPanel: React.FC<CodeAnalyzerPanelProps> = ({ selectedFile, fil
 
       const language = getFileLanguage(selectedFile.name);
       const fileName = selectedFile.name;
-      
+
       // Prepare the prompt
       const prompt = `Generate a comprehensive unit test for the following ${language} code file named "${fileName}". 
       
@@ -145,18 +159,50 @@ const CodeAnalyzerPanel: React.FC<CodeAnalyzerPanelProps> = ({ selectedFile, fil
       const result = await model.generateContent(prompt);
       const response = result.response;
       const jsonResponse = JSON.parse(response.text());
-      
+      console.log(jsonResponse);
+
       setTestResult(jsonResponse);
     } catch (err: any) {
-      console.error('Failed to generate test:', err);
-      setError(`Failed to generate test: ${err.message || 'Unknown error'}`);
+      console.error("Failed to generate test:", err);
+      setError(`Failed to generate test: ${err.message || "Unknown error"}`);
     } finally {
       setIsGenerating(false);
     }
   };
 
+  const handleSyncWithExtension = async () => {
+    if (!testResult) return;
+    console.log(testResult);
+
+    const newFileName = selectedFile?.path
+      .split("/")
+      .slice(0, -1)
+      .concat([testResult.newFile])
+      .join("/");
+
+    const returns = {
+      name: newFileName,
+      code: testResult?.testCode,
+      previousFileName: selectedFile?.path,
+    };
+
+    console.log(returns);
+
+    try {
+      const response = await axios.post("http://localhost:3000", returns, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      console.log("Response:", response.data);
+    } catch (error) {
+      console.error("Error syncing with extension:", error);
+    }
+  };
+
   // TestGenerator.jsx - Return portion
-  return ( 
+  return (
     <aside className="h-full w-[500px] bg-black/70 shadow-lg overflow-y-auto border-l border-gray-800 flex flex-col">
       <div className="sticky top-0 bg-black/70 p-4 border-b border-gray-800 z-10">
         <h2 className="text-lg font-bold text-gray-200">Test Generator</h2>
@@ -166,7 +212,7 @@ const CodeAnalyzerPanel: React.FC<CodeAnalyzerPanelProps> = ({ selectedFile, fil
           </div>
         )}
       </div>
-  
+
       <div className="flex-grow flex flex-col overflow-hidden">
         {isGenerating ? (
           <div className="flex flex-col items-center justify-center h-40 p-4">
@@ -178,7 +224,7 @@ const CodeAnalyzerPanel: React.FC<CodeAnalyzerPanelProps> = ({ selectedFile, fil
             <div className="bg-red-950 rounded-md p-4 m-4 border border-red-800">
               <h3 className="text-red-400 font-medium mb-2">Error</h3>
               <p className="text-gray-300">{error}</p>
-              <button 
+              <button
                 onClick={generateTest}
                 className="mt-4 px-4 py-2 bg-red-700 hover:bg-red-600 text-white rounded-md text-sm"
               >
@@ -189,31 +235,39 @@ const CodeAnalyzerPanel: React.FC<CodeAnalyzerPanelProps> = ({ selectedFile, fil
             <div className="flex flex-col h-full">
               <div className="border-b border-gray-800">
                 <div className="flex">
-                  {['test', 'instructions', 'coverage'].map(tab => (
+                  {["test", "instructions", "coverage"].map((tab) => (
                     <button
                       key={tab}
                       className={`px-4 py-2 text-sm ${
                         activeTab === tab
-                          ? 'text-green-400 border-b-2 border-green-400'
-                          : 'text-gray-500 hover:text-gray-300'
+                          ? "text-green-400 border-b-2 border-green-400"
+                          : "text-gray-500 hover:text-gray-300"
                       }`}
                       onClick={() => setActiveTab(tab as any)}
                     >
-                      {tab === 'test' ? 'Test Code' : tab === 'instructions' ? 'Setup Instructions' : 'Coverage Analysis'}
+                      {tab === "test"
+                        ? "Test Code"
+                        : tab === "instructions"
+                        ? "Setup Instructions"
+                        : "Coverage Analysis"}
                     </button>
                   ))}
                 </div>
               </div>
-  
+
               <div className="flex-grow overflow-y-auto p-4">
-                {activeTab === 'test' && (
+                {activeTab === "test" && (
                   <div className="bg-gray-900 rounded-md p-3">
                     <div className="flex justify-between items-center mb-3">
                       <div>
-                        <span className="text-green-400 font-medium">Generated Test</span>
-                        <span className="text-gray-400 text-xs ml-2">({testResult.language})</span>
+                        <span className="text-green-400 font-medium">
+                          Generated Test
+                        </span>
+                        <span className="text-gray-400 text-xs ml-2">
+                          ({testResult.language})
+                        </span>
                       </div>
-                      <button 
+                      <button
                         onClick={generateTest}
                         className="px-3 py-1 bg-gray-800 hover:bg-gray-700 text-white rounded-md text-xs"
                       >
@@ -223,68 +277,99 @@ const CodeAnalyzerPanel: React.FC<CodeAnalyzerPanelProps> = ({ selectedFile, fil
                     <pre className="bg-black/70 p-3 rounded overflow-x-auto text-sm text-gray-300 max-h-[calc(100vh-240px)]">
                       {testResult.testCode}
                     </pre>
+                    <button className="" onClick={handleSyncWithExtension}>
+                      sync
+                    </button>
                   </div>
                 )}
-  
-                {activeTab === 'instructions' && (
+
+                {activeTab === "instructions" && (
                   <div className="bg-gray-900 rounded-md p-4">
-                    <h3 className="text-green-400 font-medium mb-3">Setup Instructions</h3>
+                    <h3 className="text-green-400 font-medium mb-3">
+                      Setup Instructions
+                    </h3>
                     <div className="bg-black/70 p-3 rounded text-sm text-gray-300 overflow-y-auto whitespace-pre-wrap">
                       {testResult.instructions}
                     </div>
                   </div>
                 )}
-  
-                {activeTab === 'coverage' && (
+
+                {activeTab === "coverage" && (
                   <div className="bg-gray-900 rounded-md p-4">
                     <div className="flex justify-between items-center mb-4">
-                      <h3 className="text-green-400 font-medium">Coverage Analysis</h3>
+                      <h3 className="text-green-400 font-medium">
+                        Coverage Analysis
+                      </h3>
                       <div className="flex items-center">
                         <div className="w-10 h-10 rounded-full border-4 border-gray-700 flex items-center justify-center relative">
                           <div className="absolute inset-0 rounded-full overflow-hidden">
-                            <div 
-                              className="h-full bg-green-500" 
-                              style={{width: `${testResult.coverage.percentage}%`}}
+                            <div
+                              className="h-full bg-green-500"
+                              style={{
+                                width: `${testResult.coverage.percentage}%`,
+                              }}
                             ></div>
                           </div>
-                          <span className="text-white text-xs font-bold z-10">{testResult.coverage.percentage}%</span>
+                          <span className="text-white text-xs font-bold z-10">
+                            {testResult.coverage.percentage}%
+                          </span>
                         </div>
                       </div>
                     </div>
-  
+
                     <div className="space-y-4">
                       <div>
-                        <h4 className="text-gray-300 font-medium mb-2">Covered Functions</h4>
+                        <h4 className="text-gray-300 font-medium mb-2">
+                          Covered Functions
+                        </h4>
                         <ul className="bg-black/70 rounded p-2 text-sm">
                           {testResult.coverage.coveredFunctions.length > 0 ? (
-                            testResult.coverage.coveredFunctions.map((func, idx) => (
-                              <li key={idx} className="text-green-300 py-1 px-2 border-b border-gray-800 last:border-0">
-                                ✓ {func}
-                              </li>
-                            ))
+                            testResult.coverage.coveredFunctions.map(
+                              (func, idx) => (
+                                <li
+                                  key={idx}
+                                  className="text-green-300 py-1 px-2 border-b border-gray-800 last:border-0"
+                                >
+                                  ✓ {func}
+                                </li>
+                              )
+                            )
                           ) : (
-                            <li className="text-gray-400 py-1 px-2">No specific functions listed</li>
+                            <li className="text-gray-400 py-1 px-2">
+                              No specific functions listed
+                            </li>
                           )}
                         </ul>
                       </div>
-  
+
                       <div>
-                        <h4 className="text-gray-300 font-medium mb-2">Uncovered Areas</h4>
+                        <h4 className="text-gray-300 font-medium mb-2">
+                          Uncovered Areas
+                        </h4>
                         <ul className="bg-black/70 rounded p-2 text-sm">
                           {testResult.coverage.uncoveredAreas.length > 0 ? (
-                            testResult.coverage.uncoveredAreas.map((area, idx) => (
-                              <li key={idx} className="text-red-400 py-1 px-2 border-b border-gray-800 last:border-0">
-                                ✗ {area}
-                              </li>
-                            ))
+                            testResult.coverage.uncoveredAreas.map(
+                              (area, idx) => (
+                                <li
+                                  key={idx}
+                                  className="text-red-400 py-1 px-2 border-b border-gray-800 last:border-0"
+                                >
+                                  ✗ {area}
+                                </li>
+                              )
+                            )
                           ) : (
-                            <li className="text-gray-400 py-1 px-2">No uncovered areas listed</li>
+                            <li className="text-gray-400 py-1 px-2">
+                              No uncovered areas listed
+                            </li>
                           )}
                         </ul>
                       </div>
-  
+
                       <div>
-                        <h4 className="text-gray-300 font-medium mb-2">Notes</h4>
+                        <h4 className="text-gray-300 font-medium mb-2">
+                          Notes
+                        </h4>
                         <div className="bg-black/70 rounded p-3 text-sm text-gray-300 whitespace-pre-wrap">
                           {testResult.coverage.notes}
                         </div>
@@ -296,8 +381,10 @@ const CodeAnalyzerPanel: React.FC<CodeAnalyzerPanelProps> = ({ selectedFile, fil
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center h-40 p-4">
-              <p className="text-gray-400 mb-4">Ready to generate tests for this file.</p>
-              <button 
+              <p className="text-gray-400 mb-4">
+                Ready to generate tests for this file.
+              </p>
+              <button
                 onClick={generateTest}
                 className="px-4 py-2 bg-green-700 hover:bg-green-600 text-white rounded-md"
               >
@@ -308,13 +395,14 @@ const CodeAnalyzerPanel: React.FC<CodeAnalyzerPanelProps> = ({ selectedFile, fil
         ) : (
           <div className="flex flex-col items-center justify-center h-40 p-4">
             <div className="text-5xl text-gray-600 mb-4">🧪</div>
-            <p className="text-gray-400">Select a file to generate unit tests</p>
+            <p className="text-gray-400">
+              Select a file to generate unit tests
+            </p>
           </div>
         )}
       </div>
     </aside>
   );
-  
 };
 
 export default CodeAnalyzerPanel;

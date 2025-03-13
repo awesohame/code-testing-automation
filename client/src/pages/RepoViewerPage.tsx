@@ -256,7 +256,7 @@ const RepoViewerPage: React.FC = () => {
               }}
             />
           ) : (
-            <div className="flex justify-center items-center h-full bg-gray-800">
+            <div className="flex justify-center items-center h-full bg-black/70">
               <div className="text-center p-6">
                 <div className="text-6xl text-gray-600 mb-4">📄</div>
                 <p className="text-gray-400">
