@@ -6,6 +6,7 @@ import RepoViewerPage from "./pages/RepoViewerPage";
 import TestCaseDashboard from "./pages/TestCases";
 import TestingPage from "./pages/Testing";
 import DashboardPage from "./pages/Dashboard";
+import Landing from "./pages/Landing";
 
 const App: React.FC = () => {
   const handleRepoSubmit = (owner: string, name: string) => {
@@ -19,6 +20,7 @@ const App: React.FC = () => {
         element={<RepoSelectionPage onSubmit={handleRepoSubmit} />}
       />
       <Route path="/repo/:repoOwner/:repoName" element={<RepoViewerPage />} />
+      <Route path="/landing" element={<Landing />} />
 
       <Route element={<RootLayout />}>
         <Route index element={<Navigate to="/dashboard" replace />} />
