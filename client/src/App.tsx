@@ -6,6 +6,7 @@ import RepoViewerPage from "./pages/RepoViewerPage";
 import TestCaseDashboard from "./pages/TestCases";
 import TestingPage from "./pages/Testing";
 import DashboardPage from "./pages/Dashboard";
+import Test from "./pages/Test";
 
 const App: React.FC = () => {
   const handleRepoSubmit = (owner: string, name: string) => {
@@ -25,6 +26,7 @@ const App: React.FC = () => {
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/test-cases" element={<TestCaseDashboard />} />
         <Route path="/testing" element={<TestingPage />} />
+        <Route path="/test" element={<Test />} />
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Route>
 
