@@ -49,7 +49,7 @@ const scrollbarStyles = `
 import { motion } from "framer-motion"
 import { useNavigate } from "react-router-dom"
 
-const genAI = new GoogleGenerativeAI("AIzaSyCKCRR56-u5ENjCQ0IfwefNENVslKxKRoY")
+const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GOOGLE_API_KEY);
 
 // Define the schema for research outline
 const researchSchema = {

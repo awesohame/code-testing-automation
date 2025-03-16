@@ -135,7 +135,7 @@ export function Researcher() {
 
   return (
     <motion.div
-      className="flex h-screen max-h-screen overflow-hidden bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-950 dark:to-purple-950"
+      className="flex h-screen max-h-screen overflow-hidden bg-[#0f172a]"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
@@ -153,12 +153,12 @@ export function Researcher() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <Bot className="h-12 w-12 text-indigo-600" />
-          <h1 className="text-3xl flex text-center justify-center font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+          <Bot className="h-12 w-12 text-blue-400" />
+          <h1 className="text-3xl flex text-center justify-center font-bold bg-gradient-to-r from-blue-400 to-blue-600 bg-clip-text text-transparent">
             AI Research Assistant
           </h1>
         </motion.div>
-        <ScrollArea className="flex-1 h-full rounded-xl bg-white/80 dark:bg-gray-900/30 shadow-lg border border-indigo-100 dark:border-indigo-800">
+        <ScrollArea className="flex-1 h-full rounded-xl bg-gray-900/60 backdrop-blur-sm shadow-lg border border-blue-500/20">
           <div className="space-y-6 p-4">
             <AnimatePresence>
               {messages.map((message, index) => (
@@ -171,20 +171,20 @@ export function Researcher() {
                 >
                   {message.role === "ai" && (
                     <motion.div whileHover={{ scale: 1.1 }} transition={{ duration: 0.2 }}>
-                      <Avatar className="h-8 w-8 border-2 border-purple-200 bg-gradient-to-br from-indigo-100 to-purple-100">
+                      <Avatar className="h-8 w-8 border-2 border-blue-500/30 bg-gradient-to-br from-blue-900/50 to-blue-700/50">
                         <AvatarImage src="/ai-avatar.png" />
-                        <AvatarFallback className="bg-gradient-to-br from-indigo-500 to-purple-500 text-white">
+                        <AvatarFallback className="bg-gradient-to-br from-blue-500 to-blue-700 text-white">
                           AI
                         </AvatarFallback>
                       </Avatar>
                     </motion.div>
                   )}
-
+  
                   <motion.div whileHover={{ y: -2 }} transition={{ duration: 0.2 }}>
                     <Card
                       className={`max-w-3xl shadow-md ${message.role === "user"
-                          ? "bg-gradient-to-r from-indigo-100 to-indigo-50 border-indigo-200 dark:from-indigo-900/40 dark:to-indigo-800/40 dark:border-indigo-700"
-                          : "bg-gradient-to-r from-purple-50 to-white border-purple-200 dark:from-purple-900/40 dark:to-gray-900/40 dark:border-purple-700"
+                          ? "bg-gradient-to-r from-blue-900/40 to-blue-800/40 border-blue-500/30"
+                          : "bg-gradient-to-r from-gray-900/60 to-gray-900/30 border-blue-500/20"
                         }`}
                     >
                       <CardContent className="p-4 prose dark:prose-invert">
@@ -198,7 +198,7 @@ export function Researcher() {
                               href={resource.url}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="text-sm px-3 py-1 rounded-full bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-300 hover:bg-indigo-200 dark:hover:bg-indigo-800/50 transition-colors"
+                              className="text-sm px-3 py-1 rounded-full bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 transition-colors"
                               whileHover={{ scale: 1.05 }}
                               whileTap={{ scale: 0.95 }}
                             >
@@ -209,12 +209,12 @@ export function Researcher() {
                       )}
                     </Card>
                   </motion.div>
-
+  
                   {message.role === "user" && (
                     <motion.div whileHover={{ scale: 1.1 }} transition={{ duration: 0.2 }}>
-                      <Avatar className="h-8 w-8 border-2 border-indigo-200 bg-gradient-to-br from-indigo-100 to-indigo-50">
+                      <Avatar className="h-8 w-8 border-2 border-blue-500/30 bg-gradient-to-br from-blue-900/50 to-blue-800/50">
                         <AvatarImage src="/user-avatar.png" />
-                        <AvatarFallback className="bg-gradient-to-br from-indigo-500 to-indigo-600 text-white">
+                        <AvatarFallback className="bg-gradient-to-br from-blue-600 to-blue-800 text-white">
                           U
                         </AvatarFallback>
                       </Avatar>
@@ -223,7 +223,7 @@ export function Researcher() {
                 </motion.div>
               ))}
             </AnimatePresence>
-
+  
             {isLoading && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -232,21 +232,21 @@ export function Researcher() {
                 className="flex justify-start"
               >
                 <div className="flex gap-3 max-w-[80%]">
-                  <Avatar className="h-8 w-8 border-2 border-purple-200 bg-gradient-to-br from-indigo-100 to-purple-100">
-                    <AvatarFallback className="bg-gradient-to-br from-indigo-500 to-purple-500 text-white">
+                  <Avatar className="h-8 w-8 border-2 border-blue-500/30 bg-gradient-to-br from-blue-900/50 to-blue-700/50">
+                    <AvatarFallback className="bg-gradient-to-br from-blue-500 to-blue-700 text-white">
                       AI
                     </AvatarFallback>
                   </Avatar>
-                  <Card className="bg-gradient-to-r from-purple-50 to-white border-purple-200 dark:from-purple-900/40 dark:to-gray-900/40 dark:border-purple-700">
+                  <Card className="bg-gradient-to-r from-gray-900/60 to-gray-900/30 border-blue-500/20">
                     <CardContent className="p-4">
                       <div className="flex space-x-2">
                         <motion.div
-                          className="w-2 h-2 rounded-full bg-indigo-400"
+                          className="w-2 h-2 rounded-full bg-blue-400"
                           animate={{ y: [0, -5, 0] }}
                           transition={{ duration: 0.6, repeat: Number.POSITIVE_INFINITY, repeatType: "loop", delay: 0 }}
                         />
                         <motion.div
-                          className="w-2 h-2 rounded-full bg-indigo-500"
+                          className="w-2 h-2 rounded-full bg-blue-500"
                           animate={{ y: [0, -5, 0] }}
                           transition={{
                             duration: 0.6,
@@ -256,7 +256,7 @@ export function Researcher() {
                           }}
                         />
                         <motion.div
-                          className="w-2 h-2 rounded-full bg-indigo-600"
+                          className="w-2 h-2 rounded-full bg-blue-600"
                           animate={{ y: [0, -5, 0] }}
                           transition={{
                             duration: 0.6,
@@ -271,11 +271,11 @@ export function Researcher() {
                 </div>
               </motion.div>
             )}
-
+  
             <div ref={messagesEndRef} />
           </div>
         </ScrollArea>
-
+  
         <motion.form
           onSubmit={handleSubmit}
           className="relative"
@@ -287,13 +287,13 @@ export function Researcher() {
             value={inputMessage}
             onChange={(e) => setInputMessage(e.target.value)}
             placeholder="Ask me anything..."
-            className="pr-12 h-14 rounded-2xl shadow-lg border border-indigo-200 dark:border-indigo-700 focus-visible:ring-2 focus-visible:ring-indigo-500 transition-all duration-300"
+            className="pr-12 h-14 rounded-2xl shadow-lg bg-gray-900/60 text-white border border-blue-500/30 focus-visible:ring-2 focus-visible:ring-blue-500/50 transition-all duration-300"
           />
           <motion.div className="absolute right-2 top-2" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
             <Button
               type="submit"
               disabled={isLoading}
-              className="h-10 w-10 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-md hover:shadow-lg transition-all duration-300"
+              className="h-10 w-10 rounded-xl bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-700 hover:to-blue-900 shadow-md hover:shadow-lg transition-all duration-300"
             >
               {isLoading ? (
                 <motion.div
@@ -309,16 +309,16 @@ export function Researcher() {
           </motion.div>
         </motion.form>
       </motion.div>
-
+  
       {/* Resources Sidebar */}
       <motion.div
-        className="w-96 border-l border-indigo-200 dark:border-indigo-800 p-6 bg-white/50 dark:bg-gray-900/30"
+        className="w-96 border-l border-blue-500/20 p-6 bg-gray-900/30 backdrop-blur-sm"
         initial={{ opacity: 0, x: 20 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.5, delay: 0.3 }}
       >
         <motion.h3
-          className="text-lg font-semibold mb-4 text-indigo-900 dark:text-indigo-300 flex items-center"
+          className="text-lg font-semibold mb-4 text-blue-400 flex items-center"
           initial={{ y: -10 }}
           animate={{ y: 0 }}
           transition={{ duration: 0.3 }}
@@ -347,21 +347,21 @@ export function Researcher() {
                     transition={{ duration: 0.3, delay: index * 0.1 }}
                     whileHover={{ y: -5 }}
                   >
-                    <Card className="hover:shadow-lg transition-shadow duration-200 border-indigo-100 dark:border-indigo-800 overflow-hidden">
-                      <CardHeader className="text-sm font-medium text-indigo-600 dark:text-indigo-400 bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/30 dark:to-purple-900/30 p-4">
+                    <Card className="hover:shadow-lg transition-shadow duration-200 border-blue-500/20 overflow-hidden bg-gray-900/60 backdrop-blur-sm">
+                      <CardHeader className="text-sm font-medium text-blue-400 bg-gradient-to-r from-blue-900/30 to-blue-800/30 p-4">
                         <div className="flex justify-between items-center">
                           <span>{resource.title}</span>
                           <motion.div
                             className="opacity-0 group-hover:opacity-100 transition-opacity"
                             whileHover={{ rotate: 15 }}
                           >
-                            <ExternalLink className="h-4 w-4 text-indigo-500" />
+                            <ExternalLink className="h-4 w-4 text-blue-400" />
                           </motion.div>
                         </div>
                       </CardHeader>
-                      <CardContent className="text-sm text-indigo-700 dark:text-indigo-300 p-4">
+                      <CardContent className="text-sm text-blue-100/80 p-4">
                         {resource.description}
-                        <div className="mt-2 text-xs text-indigo-500/70 dark:text-indigo-400/70 truncate">
+                        <div className="mt-2 text-xs text-blue-400/70 truncate">
                           {new URL(resource.url).hostname}
                         </div>
                       </CardContent>

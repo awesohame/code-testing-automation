@@ -13,7 +13,8 @@ import CodeStandardizerPage from "./pages/CodeStandardizerPage";
 import RoutingPage from "./components/ai-tools/routing";
 import AiCourse from "./pages/AiCourse";
 import { Researcher } from "./components/ai-tools/pocket-perplexity/Researcher";
-import ResourceFetcher from "./components/ai-tools/resources-hub/Fetcher";
+import AiVideo from "./pages/AiVideo";
+import ResourceHub from "./pages/ResourceHub";
 
 const App: React.FC = () => {
   const handleRepoSubmit = (owner: string, name: string) => {
@@ -41,7 +42,7 @@ const App: React.FC = () => {
         <Route path="/ai-course" element={<AiCourse />} />
         <Route path="/ai-course/aivideo" element={<AiVideo />} />
         <Route path="/researcher" element={<Researcher />} />
-        <Route path="/resources" element={<ResourceFetcher />} />
+        <Route path="/resources" element={<ResourceHub />} />
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Route>
 
