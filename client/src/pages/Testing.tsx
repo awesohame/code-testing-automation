@@ -29,63 +29,173 @@ function parseK6Results(results: string): TestResult {
     http_reqs: 0,
     iterations: 0,
     vus: 0,
-    success_rate: 100,
+    vus_max: 0,
+    success_rate: 0,
     rps: 0,
     http_req_blocked: 0,
     http_req_connecting: 0,
     http_req_tls_handshaking: 0,
     http_req_sending: 0,
     http_req_waiting: 0,
-    http_req_receiving: 0
+    http_req_receiving: 0,
+    endpoints: [] as { method: string, path: string, success: boolean, successRate: number }[]
   };
 
   const lines = results.split('\n');
 
-  for (const line of lines) {
-    if (line.includes('http_req_duration')) {
-      const matches = line.match(/avg=([\d.]+\w+)\s+min=([\d.]+\w+)\s+med=([\d.]+\w+)\s+max=([\d.]+\w+)\s+p\(90\)=([\d.]+\w+)\s+p\(95\)=([\d.]+\w+)/);
-      if (matches) {
-        metrics.http_req_duration = {
-          avg: parseFloat(matches[1]),
-          min: parseFloat(matches[2]),
-          med: parseFloat(matches[3]),
-          max: parseFloat(matches[4]),
-          p90: parseFloat(matches[5]),
-          p95: parseFloat(matches[6])
-        };
+  // Extract individual endpoint check results
+  const checkLines = lines.filter(line =>
+    line.trim().startsWith('✓') || line.trim().startsWith('✗')
+  );
+
+  for (const line of checkLines) {
+    if (line.includes('status is')) {
+      const isSuccess = line.trim().startsWith('✓');
+      const methodMatch = line.match(/(GET|POST|PUT|DELETE|PATCH)/);
+      const method = methodMatch ? methodMatch[1] : 'UNKNOWN';
+
+      // Extract success rate if available
+      let successRate = isSuccess ? 100 : 0;
+      const nextLine = lines[lines.indexOf(line) + 1];
+      if (nextLine && nextLine.includes('↳')) {
+        const rateMatch = nextLine.match(/(\d+)%/);
+        if (rateMatch) {
+          successRate = parseInt(rateMatch[1]);
+        }
       }
-    } else if (line.includes('http_reqs')) {
-      const match = line.match(/:.*?(\d+)/);
-      if (match) metrics.http_reqs = parseInt(match[1]);
-    } else if (line.includes('iterations')) {
-      const match = line.match(/:.*?(\d+)/);
-      if (match) metrics.iterations = parseInt(match[1]);
-    } else if (line.includes('vus')) {
-      const match = line.match(/:.*?(\d+)/);
-      if (match) metrics.vus = parseInt(match[1]);
-    } else if (line.includes('http_req_blocked')) {
-      const match = line.match(/avg=([\d.]+)/);
-      if (match) metrics.http_req_blocked = parseFloat(match[1]);
-    } else if (line.includes('http_req_connecting')) {
-      const match = line.match(/avg=([\d.]+)/);
-      if (match) metrics.http_req_connecting = parseFloat(match[1]);
-    } else if (line.includes('http_req_tls_handshaking')) {
-      const match = line.match(/avg=([\d.]+)/);
-      if (match) metrics.http_req_tls_handshaking = parseFloat(match[1]);
-    } else if (line.includes('http_req_sending')) {
-      const match = line.match(/avg=([\d.]+)/);
-      if (match) metrics.http_req_sending = parseFloat(match[1]);
-    } else if (line.includes('http_req_waiting')) {
-      const match = line.match(/avg=([\d.]+)/);
-      if (match) metrics.http_req_waiting = parseFloat(match[1]);
-    } else if (line.includes('http_req_receiving')) {
-      const match = line.match(/avg=([\d.]+)/);
-      if (match) metrics.http_req_receiving = parseFloat(match[1]);
+
+      // Extract endpoint path (this is approximated since actual path isn't in output)
+      const pathHint = line.includes('data') ? '/data' :
+        line.includes('users') ? '/users' :
+          line.includes('auth') ? '/auth' : '/';
+
+      metrics.endpoints.push({
+        method,
+        path: pathHint,
+        success: isSuccess,
+        successRate
+      });
     }
   }
 
-  // Calculate requests per second
-  metrics.rps = metrics.http_reqs / 10; // assuming 10s duration
+  // Extract checks success rate
+  const checksLine = lines.find(line => line.includes('checks'));
+  if (checksLine) {
+    const checksMatch = checksLine.match(/(\d+\.\d+)%/);
+    if (checksMatch) {
+      metrics.success_rate = parseFloat(checksMatch[1]);
+    }
+  }
+
+  // Extract http_req_failed rate
+  const failedLine = lines.find(line => line.includes('http_req_failed'));
+  if (failedLine) {
+    const failedMatch = failedLine.match(/(\d+\.\d+)%/);
+    if (failedMatch && metrics.success_rate === 0) {
+      metrics.success_rate = 100 - parseFloat(failedMatch[1]);
+    }
+  }
+
+  for (const line of lines) {
+    if (line.includes('http_req_duration')) {
+      if (line.includes('expected_response:true')) continue;
+
+      const durMatch = line.match(/avg=([\d.]+)(\w*)\s+min=([\d.]+)(\w*)\s+med=([\d.]+)(\w*)\s+max=([\d.]+)(\w*)\s+p\(90\)=([\d.]+)(\w*)\s+p\(95\)=([\d.]+)(\w*)/);
+      if (durMatch) {
+        const convertToMs = (value: string, unit: string): number => {
+          if (unit === 'µs') return parseFloat(value) / 1000;
+          if (unit === 's') return parseFloat(value) * 1000;
+          return parseFloat(value);
+        };
+
+        metrics.http_req_duration = {
+          avg: convertToMs(durMatch[1], durMatch[2]),
+          min: convertToMs(durMatch[3], durMatch[4]),
+          med: convertToMs(durMatch[5], durMatch[6]),
+          max: convertToMs(durMatch[7], durMatch[8]),
+          p90: convertToMs(durMatch[9], durMatch[10]),
+          p95: convertToMs(durMatch[11], durMatch[12])
+        };
+      }
+    } else if (line.includes('http_reqs')) {
+      const match = line.match(/:\s*([\d.]+)/);
+      if (match) metrics.http_reqs = parseFloat(match[1]);
+    } else if (line.includes('iterations')) {
+      const match = line.match(/:\s*([\d.]+)/);
+      if (match) metrics.iterations = parseFloat(match[1]);
+    } else if (line.includes('vus ')) {
+      const match = line.match(/:\s*([\d.]+)/);
+      if (match) metrics.vus = parseFloat(match[1]);
+    } else if (line.includes('vus_max')) {
+      const match = line.match(/:\s*([\d.]+)/);
+      if (match) metrics.vus_max = parseFloat(match[1]);
+    } else if (line.includes('http_req_blocked')) {
+      const match = line.match(/avg=([\d.]+)(\w*)/);
+      if (match) {
+        const value = parseFloat(match[1]);
+        const unit = match[2];
+        if (unit === 'µs') metrics.http_req_blocked = value / 1000;
+        else if (unit === 's') metrics.http_req_blocked = value * 1000;
+        else metrics.http_req_blocked = value;
+      }
+    } else if (line.includes('http_req_connecting')) {
+      const match = line.match(/avg=([\d.]+)(\w*)/);
+      if (match) {
+        const value = parseFloat(match[1]);
+        const unit = match[2];
+        if (unit === 'µs') metrics.http_req_connecting = value / 1000;
+        else if (unit === 's') metrics.http_req_connecting = value * 1000;
+        else metrics.http_req_connecting = value;
+      }
+    } else if (line.includes('http_req_tls_handshaking')) {
+      const match = line.match(/avg=([\d.]+)(\w*)/);
+      if (match) {
+        const value = parseFloat(match[1]);
+        const unit = match[2];
+        if (unit === 'µs') metrics.http_req_tls_handshaking = value / 1000;
+        else if (unit === 's') metrics.http_req_tls_handshaking = value * 1000;
+        else metrics.http_req_tls_handshaking = value;
+      }
+    } else if (line.includes('http_req_sending')) {
+      const match = line.match(/avg=([\d.]+)(\w*)/);
+      if (match) {
+        const value = parseFloat(match[1]);
+        const unit = match[2];
+        if (unit === 'µs') metrics.http_req_sending = value / 1000;
+        else if (unit === 's') metrics.http_req_sending = value * 1000;
+        else metrics.http_req_sending = value;
+      }
+    } else if (line.includes('http_req_waiting')) {
+      const match = line.match(/avg=([\d.]+)(\w*)/);
+      if (match) {
+        const value = parseFloat(match[1]);
+        const unit = match[2];
+        if (unit === 'µs') metrics.http_req_waiting = value / 1000;
+        else if (unit === 's') metrics.http_req_waiting = value * 1000;
+        else metrics.http_req_waiting = value;
+      }
+    } else if (line.includes('http_req_receiving')) {
+      const match = line.match(/avg=([\d.]+)(\w*)/);
+      if (match) {
+        const value = parseFloat(match[1]);
+        const unit = match[2];
+        if (unit === 'µs') metrics.http_req_receiving = value / 1000;
+        else if (unit === 's') metrics.http_req_receiving = value * 1000;
+        else metrics.http_req_receiving = value;
+      }
+    }
+  }
+
+  // Get RPS from reported value
+  const rpsLine = lines.find(line => line.includes('http_reqs'));
+  if (rpsLine) {
+    const rpsMatch = rpsLine.match(/(\d+\.\d+)\/s/);
+    if (rpsMatch) {
+      metrics.rps = parseFloat(rpsMatch[1]);
+    } else {
+      metrics.rps = metrics.http_reqs / 10;
+    }
+  }
 
   return {
     timestamp: new Date().toISOString(),
