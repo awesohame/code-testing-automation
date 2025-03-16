@@ -53,6 +53,7 @@ export interface TestResult {
     http_reqs: number;
     iterations: number;
     vus: number;
+    vus_max: number;
     success_rate: number;
     rps: number;
     http_req_blocked: number;
@@ -61,6 +62,12 @@ export interface TestResult {
     http_req_sending: number;
     http_req_waiting: number;
     http_req_receiving: number;
+    endpoints?: {
+      method: string;
+      path: string;
+      success: boolean;
+      successRate: number;
+    }[];
   };
 }
 

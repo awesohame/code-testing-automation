@@ -17,7 +17,7 @@ import {
   AreaChart,
   Area
 } from 'recharts';
-import { Activity, Users, Zap, Clock, CheckCircle, BarChart2 } from 'lucide-react';
+import { Activity, Users, Zap, Clock, CheckCircle, BarChart2, AlertCircle } from 'lucide-react';
 import type { TestResult, NetworkMetrics } from '../types';
 
 interface TestResultsProps {
@@ -69,7 +69,7 @@ export function TestResults({ results }: TestResultsProps) {
           <Users className="w-6 h-6 text-purple-500" />
           <div>
             <h3 className="text-gray-400 text-sm font-medium">Max VUs</h3>
-            <p className="text-2xl font-bold text-white mt-1">{metrics.vus}</p>
+            <p className="text-2xl font-bold text-white mt-1">{metrics.vus_max}</p>
           </div>
         </div>
         <div className="bg-gray-800 p-6 rounded-lg flex items-start space-x-4">
@@ -87,6 +87,68 @@ export function TestResults({ results }: TestResultsProps) {
           </div>
         </div>
       </div>
+
+      {/* Endpoint Status Section */}
+      {metrics.endpoints && metrics.endpoints.length > 0 && (
+        <div className="bg-gray-800 p-6 rounded-lg">
+          <h3 className="text-lg font-medium text-white mb-4">Endpoint Status</h3>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="bg-gray-750">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Method</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Path</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Status</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Success Rate</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-700">
+                {metrics.endpoints.map((endpoint, i) => (
+                  <tr key={i} className="bg-gray-800">
+                    <td className="px-6 py-4 text-sm font-medium">
+                      <span className={`px-2 py-1 rounded text-xs ${endpoint.method === 'GET' ? 'bg-blue-500/20 text-blue-400' :
+                          endpoint.method === 'POST' ? 'bg-green-500/20 text-green-400' :
+                            endpoint.method === 'PUT' ? 'bg-yellow-500/20 text-yellow-400' :
+                              endpoint.method === 'DELETE' ? 'bg-red-500/20 text-red-400' :
+                                'bg-purple-500/20 text-purple-400'
+                        }`}>
+                        {endpoint.method}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-300">{endpoint.path}</td>
+                    <td className="px-6 py-4 text-sm">
+                      <div className="flex items-center">
+                        {endpoint.success ? (
+                          <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
+                        ) : (
+                          <AlertCircle className="w-4 h-4 text-red-500 mr-2" />
+                        )}
+                        <span className={endpoint.success ? 'text-green-400' : 'text-red-400'}>
+                          {endpoint.success ? 'Success' : 'Failed'}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-300">
+                      <div className="flex items-center">
+                        <div className="w-32 bg-gray-700 rounded-full h-2 mr-2">
+                          <div
+                            className={`h-2 rounded-full ${endpoint.successRate > 90 ? 'bg-green-500' :
+                                endpoint.successRate > 70 ? 'bg-yellow-500' :
+                                  'bg-red-500'
+                              }`}
+                            style={{ width: `${endpoint.successRate}%` }}
+                          ></div>
+                        </div>
+                        <span>{endpoint.successRate}%</span>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Response Time Percentiles */}
