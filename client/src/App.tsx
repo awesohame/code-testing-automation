@@ -1,5 +1,5 @@
 import React from "react";
-import { Routes, Route, Navigate} from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import RootLayout from "@/components/layouts/RootLayout"; // Ensure the import path is correct
 import RepoSelectionPage from "./pages/RepoSelectingPage";
 import RepoViewerPage from "./pages/RepoViewerPage";
@@ -31,7 +31,7 @@ const App: React.FC = () => {
       <Route path="/landing" element={<Landing />} />
 
       <Route element={<RootLayout />}>
-        <Route index element={<Navigate to="/dashboard" replace />} />
+        {/* <Route index element={<Navigate to="/dashboard" replace />} /> */}
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/test-cases" element={<TestCaseDashboard />} />
         <Route path="/testing" element={<TestingPage />} />
