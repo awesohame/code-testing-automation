@@ -10,7 +10,9 @@ import Landing from "./pages/Landing";
 import Test from "./pages/Test";
 import Swagger from "./pages/Swagger";
 import RoutingPage from "./components/ai-tools/routing";
+import AiCourse from "./pages/AiCourse";
 import { Researcher } from "./components/ai-tools/pocket-perplexity/Researcher";
+import AiVideo from "./pages/AiVideo";
 
 const App: React.FC = () => {
   const handleRepoSubmit = (owner: string, name: string) => {
@@ -34,6 +36,8 @@ const App: React.FC = () => {
         <Route path="/swag" element={<Swagger />} />
         <Route path="/test" element={<Test />} />
         <Route path="/ai-tools" element={<RoutingPage />} />
+        <Route path="/ai-course" element={<AiCourse />} />
+        <Route path="/ai-course/aivideo" element={<AiVideo />} />
         <Route path="/researcher" element={<Researcher />} />
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Route>
