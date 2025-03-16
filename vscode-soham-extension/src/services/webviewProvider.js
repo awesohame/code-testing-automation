@@ -76,15 +76,34 @@ class ChatbotViewProvider {
         }
         try {
             let prompt = "Remember to keep your response as short as possible. " + message.text;
+            let isEditMode = false;
+            let originalContent = "";
+            let fileName = "";
             // Include file context if provided
             if (message.context && message.context.filename) {
-                prompt = `I'm working with a file named ${message.context.filename} (${message.context.language}). 
+                isEditMode = message.editMode || false;
+                originalContent = message.context.content;
+                fileName = message.context.filename;
+                if (isEditMode) {
+                    prompt = `I'm working with a file named ${message.context.filename} (${message.context.language}). 
+Here's the current code:
+\`\`\`${message.context.language}
+${message.context.content}
+\`\`\`
+
+My request is: ${message.text}
+
+IMPORTANT: Respond ONLY with the complete modified code. Do not include any explanations, markdown formatting, or other text before or after the code.`;
+                }
+                else {
+                    prompt = `I'm working with a file named ${message.context.filename} (${message.context.language}). 
 Here's the relevant content:
 \`\`\`${message.context.language}
 ${message.context.content}
 \`\`\`
 
 My question is: ${message.text}`;
+                }
             }
             // Use generateContent instead of chat for simpler implementation
             const result = await this.model.generateContent(prompt);
@@ -95,6 +114,14 @@ My question is: ${message.text}`;
                 type: 'chatResponse',
                 text: text
             });
+            // Handle edit mode with diff view
+            if (isEditMode) {
+                await vscode.commands.executeCommand('http-file-updater.handleAIResponse', text, {
+                    isEditMode: true,
+                    fileName: fileName,
+                    originalContent: originalContent
+                });
+            }
         }
         catch (error) {
             console.error('Error calling Gemini:', error);
@@ -265,10 +292,15 @@ My question is: ${message.text}`;
       flex-shrink: 0; /* Prevent shrinking */
     }
     
+    .checkbox-container {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 8px;
+    }
+    
     .context-checkbox {
       display: flex;
       align-items: center;
-      margin-bottom: 8px;
       font-size: 12px;
       color: var(--vscode-descriptionForeground);
     }
@@ -425,9 +457,15 @@ My question is: ${message.text}`;
       <!-- Messages will be inserted here -->
     </div>
     <div class="chat-input-container">
-      <div class="context-checkbox">
-        <input type="checkbox" id="send-context" />
-        <label for="send-context">Send context of <span id="current-file">No file open</span></label>
+      <div class="checkbox-container">
+        <div class="context-checkbox">
+          <input type="checkbox" id="send-context" />
+          <label for="send-context">Send context of <span id="current-file">No file open</span></label>
+        </div>
+        <div class="context-checkbox">
+          <input type="checkbox" id="edit-mode" />
+          <label for="edit-mode">Edit mode</label>
+        </div>
       </div>
       <div class="input-row">
         <input type="text" id="chat-input" class="chat-input" placeholder="Ask your AI mentor a question..." />
@@ -449,7 +487,8 @@ My question is: ${message.text}`;
     const chatMessages = document.getElementById('chat-messages');
     const chatInput = document.getElementById('chat-input');
     const sendButton = document.getElementById('send-button');
-   const sendContextCheckbox = document.getElementById('send-context');
+    const sendContextCheckbox = document.getElementById('send-context');
+    const editModeCheckbox = document.getElementById('edit-mode');
     const currentFileSpan = document.getElementById('current-file');
     
     // File context data
@@ -518,6 +557,7 @@ My question is: ${message.text}`;
         
         // Enable/disable context checkbox based on whether a file is open
         sendContextCheckbox.disabled = !message.filename;
+        editModeCheckbox.disabled = !message.filename;
       } else if (message.type === 'typing') {
         if (message.isTyping) {
           showTypingIndicator();
@@ -600,6 +640,7 @@ My question is: ${message.text}`;
         // Add file context if checkbox is checked
         if (sendContextCheckbox.checked && currentFileContext.filename) {
           messageData.context = currentFileContext;
+          messageData.editMode = editModeCheckbox.checked;
         }
         
         // Send message to extension
