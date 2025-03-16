@@ -9,6 +9,7 @@ import DashboardPage from "./pages/Dashboard";
 import Landing from "./pages/Landing";
 import Test from "./pages/Test";
 import Swagger from "./pages/Swagger";
+import CodeStandardizerPage from "./pages/CodeStandardizerPage";
 
 const App: React.FC = () => {
   const handleRepoSubmit = (owner: string, name: string) => {
@@ -31,6 +32,7 @@ const App: React.FC = () => {
         <Route path="/testing" element={<TestingPage />} />
         <Route path="/swag" element={<Swagger />} />
         <Route path="/test" element={<Test />} />
+        <Route path="/code-culture" element={<CodeStandardizerPage />} />
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Route>
 
