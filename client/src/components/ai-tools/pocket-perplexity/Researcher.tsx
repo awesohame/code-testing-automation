@@ -34,7 +34,7 @@ export function Researcher() {
   const [resources, setResources] = useState<Resource[]>([])
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
-  const genAI = new GoogleGenerativeAI("AIzaSyCKCRR56-u5ENjCQ0IfwefNENVslKxKRoY")
+  const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY as string)
   const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" })
 
   const scrollToBottom = () => {
@@ -47,14 +47,14 @@ export function Researcher() {
 
   useEffect(() => {
     // Initial greeting message with enhanced design
-      setMessages([
-        {
-          content:
-            "👋 **Hello!** I'm your AI research assistant. Ask me anything, and I'll provide detailed answers with reputable resources.",
-          role: "ai",
-        },
-      ])
-      
+    setMessages([
+      {
+        content:
+          "👋 **Hello!** I'm your AI research assistant. Ask me anything, and I'll provide detailed answers with reputable resources.",
+        role: "ai",
+      },
+    ])
+
   }, [])
 
   const handleSubmit = async (e?: React.FormEvent) => {
@@ -135,14 +135,14 @@ export function Researcher() {
 
   return (
     <motion.div
-      className="flex h-screen bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-950 dark:to-purple-950"
+      className="flex h-screen max-h-screen overflow-hidden bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-950 dark:to-purple-950"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
     >
       {/* Main Chat Area */}
       <motion.div
-        className="flex-1 flex flex-col p-6 space-y-4"
+        className="flex-1 flex flex-col p-6 space-y-4 overflow-hidden"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
@@ -158,7 +158,7 @@ export function Researcher() {
             AI Research Assistant
           </h1>
         </motion.div>
-        <ScrollArea className="flex-1 rounded-xl bg-white/80 dark:bg-gray-900/30 shadow-lg border border-indigo-100 dark:border-indigo-800">
+        <ScrollArea className="flex-1 h-full rounded-xl bg-white/80 dark:bg-gray-900/30 shadow-lg border border-indigo-100 dark:border-indigo-800">
           <div className="space-y-6 p-4">
             <AnimatePresence>
               {messages.map((message, index) => (
@@ -182,11 +182,10 @@ export function Researcher() {
 
                   <motion.div whileHover={{ y: -2 }} transition={{ duration: 0.2 }}>
                     <Card
-                      className={`max-w-3xl shadow-md ${
-                        message.role === "user"
+                      className={`max-w-3xl shadow-md ${message.role === "user"
                           ? "bg-gradient-to-r from-indigo-100 to-indigo-50 border-indigo-200 dark:from-indigo-900/40 dark:to-indigo-800/40 dark:border-indigo-700"
                           : "bg-gradient-to-r from-purple-50 to-white border-purple-200 dark:from-purple-900/40 dark:to-gray-900/40 dark:border-purple-700"
-                      }`}
+                        }`}
                     >
                       <CardContent className="p-4 prose dark:prose-invert">
                         <ReactMarkdown>{message.content}</ReactMarkdown>
@@ -326,8 +325,8 @@ export function Researcher() {
         >
           <span className="mr-2">📚</span> References & Resources
         </motion.h3>
-        <ScrollArea className="h-full pr-4">
-          <AnimatePresence mode="wait">
+        <ScrollArea className="h-[calc(100vh-8rem)] pr-4">
+        <AnimatePresence mode="wait">
             {resources.length > 0 ? (
               <motion.div
                 className="space-y-4"
