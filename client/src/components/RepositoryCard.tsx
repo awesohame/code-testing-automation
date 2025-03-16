@@ -15,6 +15,7 @@ export function RepositoryCard({ repository, onSelect, isSelected }: RepositoryC
         'p-4 rounded-lg transition-all duration-200 cursor-pointer',
         'border border-gray-700 hover:border-blue-500',
         'bg-gray-800 hover:bg-gray-750',
+        'min-h-[150px] flex flex-col justify-around',
         isSelected && 'border-blue-500 ring-2 ring-blue-500/50'
       )}
       onClick={() => onSelect(repository)}

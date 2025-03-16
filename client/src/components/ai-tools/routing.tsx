@@ -1,27 +1,28 @@
-"use client"
+"use client";
 
-import { motion } from "framer-motion"
-import { BrainCircuit, BookOpen, Code2 } from "lucide-react"
-import { useState, useRef, useEffect } from "react"
+import { motion } from "framer-motion";
+import { BrainCircuit, BookOpen, Code2 } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 // Animated code background component
 const AnimatedCodeBackground = ({ children }) => {
-  const containerRef = useRef(null)
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
+  const containerRef = useRef(null);
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
     const handleMouseMove = (e) => {
-      if (!containerRef.current) return
-      const rect = containerRef.current.getBoundingClientRect()
+      if (!containerRef.current) return;
+      const rect = containerRef.current.getBoundingClientRect();
       setMousePosition({
         x: e.clientX - rect.left,
         y: e.clientY - rect.top,
-      })
-    }
+      });
+    };
 
-    window.addEventListener("mousemove", handleMouseMove)
-    return () => window.removeEventListener("mousemove", handleMouseMove)
-  }, [])
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
+  }, []);
 
   return (
     <div
@@ -45,7 +46,9 @@ const AnimatedCodeBackground = ({ children }) => {
             }}
             animate={{
               y: "120%",
-              x: `calc(${Math.random() * 100}% + ${(mousePosition.x / 50) * (i % 2 ? 1 : -1)}px)`,
+              x: `calc(${Math.random() * 100}% + ${
+                (mousePosition.x / 50) * (i % 2 ? 1 : -1)
+              }px)`,
               opacity: 0,
             }}
             transition={{
@@ -83,23 +86,23 @@ const AnimatedCodeBackground = ({ children }) => {
 
       {children}
     </div>
-  )
-}
+  );
+};
 
 // Animated cursor component
 const AnimatedCursor = () => {
-  const cursorRef = useRef(null)
+  const cursorRef = useRef(null);
 
   useEffect(() => {
     const handleMouseMove = (e) => {
-      if (!cursorRef.current) return
-      cursorRef.current.style.left = `${e.clientX}px`
-      cursorRef.current.style.top = `${e.clientY}px`
-    }
+      if (!cursorRef.current) return;
+      cursorRef.current.style.left = `${e.clientX}px`;
+      cursorRef.current.style.top = `${e.clientY}px`;
+    };
 
-    window.addEventListener("mousemove", handleMouseMove)
-    return () => window.removeEventListener("mousemove", handleMouseMove)
-  }, [])
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
+  }, []);
 
   return (
     <motion.div
@@ -113,16 +116,16 @@ const AnimatedCursor = () => {
         transform: "translate(-50%, -50%)",
       }}
     />
-  )
-}
+  );
+};
 
 const CourseCard = ({ title, icon: Icon, href, description, imageSrc }) => {
-  const [isHovered, setIsHovered] = useState(false)
-
+  const [isHovered, setIsHovered] = useState(false);
+  const navigate = useNavigate();
   return (
     <motion.a
-      href={href}
       className="block"
+      onClick={() => navigate(href)}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       whileHover={{ y: -8 }}
@@ -197,10 +200,14 @@ export function ${title.replace(/\s+/g, "")}() {
           <div className="space-y-3">
             <div className="flex items-center">
               <span className="text-blue-400 font-mono mr-2">{">"}</span>
-              <h2 className="text-xl font-semibold text-white tracking-tight">{title}</h2>
+              <h2 className="text-xl font-semibold text-white tracking-tight">
+                {title}
+              </h2>
             </div>
 
-            <p className="text-blue-100/80 text-sm leading-relaxed line-clamp-3">{description}</p>
+            <p className="text-blue-100/80 text-sm leading-relaxed line-clamp-3">
+              {description}
+            </p>
 
             <div className="pt-3">
               <motion.div
@@ -215,7 +222,12 @@ export function ${title.replace(/\s+/g, "")}() {
                   viewBox="0 0 24 24"
                   stroke="currentColor"
                 >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 5l7 7-7 7"
+                  />
                 </svg>
               </motion.div>
             </div>
@@ -223,15 +235,15 @@ export function ${title.replace(/\s+/g, "")}() {
         </div>
       </div>
     </motion.a>
-  )
-}
+  );
+};
 
 const AIToolsPage = () => {
   return (
     <AnimatedCodeBackground>
       <AnimatedCursor />
 
-      <main className="relative min-h-screen flex flex-col justify-center px-4 sm:px-6 lg:px-8 py-16">
+      <main className="relative h-screen flex flex-col justify-center px-4 sm:px-6 lg:px-8 py-16">
         <div className="max-w-7xl mx-auto w-full">
           <motion.div
             initial={{ opacity: 0, y: -20 }}
@@ -240,7 +252,8 @@ const AIToolsPage = () => {
             className="text-center mb-12 md:mb-16"
           >
             <div className="inline-block mb-3 px-3 py-1 bg-blue-500/10 backdrop-blur-sm rounded-full text-blue-400 text-xs font-mono border border-blue-500/30">
-              <span className="animate-pulse mr-1.5">●</span> AI-powered developer tools
+              <span className="animate-pulse mr-1.5">●</span> AI-powered
+              developer tools
             </div>
 
             <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white tracking-tight">
@@ -255,7 +268,8 @@ const AIToolsPage = () => {
               animate={{ opacity: 1 }}
               transition={{ delay: 0.2 }}
             >
-              Discover intelligent tools designed to enhance your development workflow
+              Discover intelligent tools designed to enhance your development
+              workflow
             </motion.p>
 
             {/* Animated typing indicator */}
@@ -267,7 +281,9 @@ const AIToolsPage = () => {
             >
               <div className="inline-flex items-center px-3 py-1 bg-blue-500/10 backdrop-blur-sm rounded-full text-blue-400 text-xs font-mono border border-blue-500/30">
                 <span className="mr-2">$</span>
-                <span className="typing-effect">npm install @ai-tools/core</span>
+                <span className="typing-effect">
+                  npm install @ai-tools/core
+                </span>
               </div>
             </motion.div>
           </motion.div>
@@ -304,22 +320,31 @@ const AIToolsPage = () => {
           border-right: 2px solid #60a5fa;
           white-space: nowrap;
           margin: 0;
-          animation: typing 3.5s steps(30, end), blink-caret 0.75s step-end infinite;
+          animation: typing 3.5s steps(30, end),
+            blink-caret 0.75s step-end infinite;
         }
-        
+
         @keyframes typing {
-          from { width: 0 }
-          to { width: 100% }
+          from {
+            width: 0;
+          }
+          to {
+            width: 100%;
+          }
         }
-        
+
         @keyframes blink-caret {
-          from, to { border-color: transparent }
-          50% { border-color: #60a5fa }
+          from,
+          to {
+            border-color: transparent;
+          }
+          50% {
+            border-color: #60a5fa;
+          }
         }
       `}</style>
     </AnimatedCodeBackground>
-  )
-}
+  );
+};
 
-export default AIToolsPage
-
+export default AIToolsPage;
