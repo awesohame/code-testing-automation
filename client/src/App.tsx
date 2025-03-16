@@ -1,7 +1,6 @@
 import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
-import RootLayout from "@/components/layouts/RootLayout"; // Ensure the import path is correct
-import RepoSelectionPage from "./pages/RepoSelectingPage";
+import RootLayout from "@/components/layouts/RootLayout";
 import RepoViewerPage from "./pages/RepoViewerPage";
 import TestCaseDashboard from "./pages/TestCases";
 import TestingPage from "./pages/Testing";
@@ -23,15 +22,10 @@ const App: React.FC = () => {
 
   return (
     <Routes>
-      <Route
-        path="/"
-        element={<RepoSelectionPage onSubmit={handleRepoSubmit} />}
-      />
-      <Route path="/repo/:repoOwner/:repoName" element={<RepoViewerPage />} />
-      <Route path="/landing" element={<Landing />} />
+      <Route path="/" element={<Landing />} />
+      <Route path="/unit-test/:repoOwner/:repoName" element={<RepoViewerPage />} />
 
       <Route element={<RootLayout />}>
-        {/* <Route index element={<Navigate to="/dashboard" replace />} /> */}
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/test-cases" element={<TestCaseDashboard />} />
         <Route path="/testing" element={<TestingPage />} />
@@ -43,10 +37,8 @@ const App: React.FC = () => {
         <Route path="/ai-course/aivideo" element={<AiVideo />} />
         <Route path="/researcher" element={<Researcher />} />
         <Route path="/resources" element={<ResourceHub />} />
-        <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Route>
 
-      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 };
