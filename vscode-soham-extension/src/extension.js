@@ -152,14 +152,30 @@ function showDiffActionButtons(originalContent, modifiedContent, fileName) {
 }
 // Helper function to process code response - remove markdown formatting
 function processCodeResponse(response) {
-    // Check if the response is wrapped in code blocks with backticks
-    const codeBlockRegex = /^```[\w-]*\n([\s\S]*?)```$/;
+    // First, check if the response is wrapped in code blocks with backticks
+    const codeBlockRegex = /^```([\w-]*)\n([\s\S]*?)```$/;
     const match = response.match(codeBlockRegex);
     if (match) {
         // Return just the code without the markdown formatting
-        return match[1];
+        return match[2];
     }
-    return response; // Return original if no markdown formatting found
+    // If there are multiple code blocks, try to extract the most relevant one
+    const multipleCodeBlocksRegex = /```([\w-]*)\n([\s\S]*?)```/g;
+    const matches = [...response.matchAll(multipleCodeBlocksRegex)];
+    if (matches.length > 0) {
+        // Find the largest code block (likely the main content)
+        let largestBlock = '';
+        let maxLength = 0;
+        for (const m of matches) {
+            if (m[2].length > maxLength) {
+                maxLength = m[2].length;
+                largestBlock = m[2];
+            }
+        }
+        return largestBlock;
+    }
+    // If no code blocks found, return the original response
+    return response;
 }
 // Helper function to send active file info to the webview
 function sendActiveFileInfo(provider) {
