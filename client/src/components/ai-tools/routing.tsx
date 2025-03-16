@@ -77,13 +77,20 @@ const RoutingPage = () => {
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-2 gap-6 lg:gap-8">
+          <div className="grid grid-cols-3 md:grid-cols-3 lg:grid-cols-3 gap-6 lg:gap-8">
             <CourseCard
               title="AI Mastery"
               icon={GraduationCap}
               href="/ai-course"
               description="Unlock the power of Artificial Intelligence. From machine learning algorithms to neural networks, dive deep into the technology shaping our future. Perfect for aspiring data scientists and AI enthusiasts."
               imageSrc="/ai.png"
+            />
+            <CourseCard
+              title="Resources Hub"
+              icon={Laptop}
+              href="/resources"
+              description="Discover a wealth of resources to enhance your learning journey. Whether it's online courses, podcasts, or books, find the perfect resource to help you grow and develop your skills."
+              imageSrc="/online.png"
             />
             <CourseCard
               title="Your own Research Assistant"

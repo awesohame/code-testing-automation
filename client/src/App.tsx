@@ -11,6 +11,7 @@ import Test from "./pages/Test";
 import Swagger from "./pages/Swagger";
 import RoutingPage from "./components/ai-tools/routing";
 import { Researcher } from "./components/ai-tools/pocket-perplexity/Researcher";
+import ResourceFetcher from "./components/ai-tools/resources-hub/Fetcher";
 
 const App: React.FC = () => {
   const handleRepoSubmit = (owner: string, name: string) => {
@@ -35,6 +36,7 @@ const App: React.FC = () => {
         <Route path="/test" element={<Test />} />
         <Route path="/ai-tools" element={<RoutingPage />} />
         <Route path="/researcher" element={<Researcher />} />
+        <Route path="/resources" element={<ResourceFetcher />} />
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Route>
 
