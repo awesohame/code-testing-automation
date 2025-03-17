@@ -1,11 +1,14 @@
 // src/hooks/useUserData.ts
 import { useEffect } from 'react';
-import { useUser } from '@/context/userContext';
+import { useUserContext } from '@/context/userContext';
 import { useAuth } from '@clerk/clerk-react';
 
 export const useUserData = () => {
-  const { user, setUserData, loading, setLoading, error, setError } = useUser();
+  const { user, setUserData, loading, setLoading, error, setError } = useUserContext();
   const { userId } = useAuth();
+  useEffect(() => {
+    console.log("User updated:", user);
+  }, [user]);
 
   const fetchUserData = async (): Promise<void> => {
     if (!userId) return;
@@ -15,12 +18,12 @@ export const useUserData = () => {
       setError(null);
       const url="http://localhost:5000/api/users/"+userId;
       const response = await fetch(url);
-      console.log(response)
       if (!response.ok) {
         throw new Error('Failed to fetch user data');
       }
       
       const userData = await response.json();
+      console.log(userData)
       setUserData(userData);
     } catch (err) {
       console.error('Error fetching user data:', err);

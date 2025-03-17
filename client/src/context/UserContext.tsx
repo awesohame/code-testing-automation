@@ -1,7 +1,7 @@
-// src/context/UserContext.tsx
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect } from "react";
+import { useUser } from "@clerk/clerk-react";
 
-// Define User interface matching your MongoDB schema
+// Define User interface
 interface User {
   _id?: string;
   clerkId: string;
@@ -9,7 +9,6 @@ interface User {
   firstName?: string;
   lastName?: string;
   imageUrl?: string;
-  // Onboarding fields
   onboardingCompleted: boolean;
   jobTitle?: string;
   company?: string;
@@ -30,31 +29,42 @@ interface UserContextType {
   setError: (error: string | null) => void;
 }
 
-// Create context with undefined initial value
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
-// Props for the provider component
 interface UserProviderProps {
   children: ReactNode;
 }
 
-// Provider component
 export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
+  const { user: clerkUser, isSignedIn } = useUser(); // Get Clerk user
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Set user data
+  // Sync Clerk's user data to our context
+  useEffect(() => {
+    if (isSignedIn && clerkUser) {
+      setUser({
+        clerkId: clerkUser.id,
+        email: clerkUser.primaryEmailAddress?.emailAddress || "",
+        firstName: clerkUser.firstName || "",
+        lastName: clerkUser.lastName || "",
+        imageUrl: clerkUser.imageUrl,
+        onboardingCompleted: false, // Default to false (or fetch from DB)
+      });
+    } else {
+      setUser(null);
+    }
+  }, [clerkUser, isSignedIn]);
+
   const setUserData = (userData: User): void => {
     setUser(userData);
   };
 
-  // Clear user data
   const clearUser = (): void => {
     setUser(null);
   };
 
-  // Value object to be provided to consumers
   const value: UserContextType = {
     user,
     setUserData,
@@ -62,17 +72,16 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
     loading,
     setLoading,
     error,
-    setError
+    setError,
   };
 
   return <UserContext.Provider value={value}>{children}</UserContext.Provider>;
 };
 
-// Custom hook to use the context
-export const useUser = (): UserContextType => {
+export const useUserContext = (): UserContextType => {
   const context = useContext(UserContext);
-  if (context === undefined) {
-    throw new Error('useUser must be used within a UserProvider');
+  if (!context) {
+    throw new Error("useUserContext must be used within a UserProvider");
   }
   return context;
 };

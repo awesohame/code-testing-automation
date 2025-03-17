@@ -11,7 +11,7 @@ const Onboarding = () => {
   // In production, you would get this from Clerk authentication
   const { userId } = useAuth();
   const clerkId = userId 
-  
+
   const [formData, setFormData] = useState({
     clerkId: clerkId, // Include clerkId in form data
     firstName: '',
