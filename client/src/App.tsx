@@ -1,7 +1,6 @@
 import React from "react";
-import { Routes, Route, Navigate} from "react-router-dom";
-import RootLayout from "@/components/layouts/RootLayout"; // Ensure the import path is correct
-import RepoSelectionPage from "./pages/RepoSelectingPage";
+import { Routes, Route, Navigate } from "react-router-dom";
+import RootLayout from "@/components/layouts/RootLayout";
 import RepoViewerPage from "./pages/RepoViewerPage";
 import TestCaseDashboard from "./pages/TestCases";
 import TestingPage from "./pages/Testing";
@@ -13,11 +12,13 @@ import CodeStandardizerPage from "./pages/CodeStandardizerPage";
 import RoutingPage from "./components/ai-tools/routing";
 import AiCourse from "./pages/AiCourse";
 import { Researcher } from "./components/ai-tools/pocket-perplexity/Researcher";
-import ResourceFetcher from "./components/ai-tools/resources-hub/Fetcher";
 import AiVideo from "./pages/AiVideo";
+import ResourceFetcher from "./components/ai-tools/resources-hub/Fetcher";
+import ResourceHub from "./pages/ResourceHub";
 import SignInPage from "./pages/SignIn";
 import SignUpPage from "./pages/SignUp";
 import OnboardingForm from "./pages/Onboarding";
+import RepoSelectionPage from "./pages/RepoSelectingPage";
 
 const App: React.FC = () => {
   const handleRepoSubmit = (owner: string, name: string) => {
@@ -29,15 +30,10 @@ const App: React.FC = () => {
       <Route path="/sign-in/*" element={<SignInPage />} />
       <Route path="/sign-up/*" element={<SignUpPage />} />
       <Route path="/onboarding/*" element={<OnboardingForm />} />
-      <Route
-        path="/"
-        element={<RepoSelectionPage onSubmit={handleRepoSubmit} />}
-      />
-      <Route path="/repo/:repoOwner/:repoName" element={<RepoViewerPage />} />
-      <Route path="/landing" element={<Landing />} />
+      <Route path="/" element={<Landing />} />
+      <Route path="/unit-test/:repoOwner/:repoName" element={<RepoViewerPage />} />
 
       <Route element={<RootLayout />}>
-        <Route index element={<Navigate to="/dashboard" replace />} />
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/test-cases" element={<TestCaseDashboard />} />
         <Route path="/testing" element={<TestingPage />} />
@@ -48,12 +44,9 @@ const App: React.FC = () => {
         <Route path="/ai-course" element={<AiCourse />} />
         <Route path="/ai-course/aivideo" element={<AiVideo />} />
         <Route path="/researcher" element={<Researcher />} />
-        <Route path="/resources" element={<ResourceFetcher />} />
-        {/* <Route path="*" element={<Navigate to="/dashboard" replace />} /> */}
-        
+        <Route path="/resources" element={<ResourceHub />} />
       </Route>
 
-      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 };

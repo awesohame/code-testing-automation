@@ -133,249 +133,252 @@ export function Researcher() {
     </div>
   )
 
-  return (
+ return (
+  <motion.div
+    className="flex h-screen max-h-screen overflow-hidden bg-[#0f172a]"
+    initial={{ opacity: 0 }}
+    animate={{ opacity: 1 }}
+    transition={{ duration: 0.5 }}
+  >
+    {/* Main Chat Area */}
     <motion.div
-      className="flex h-screen max-h-screen overflow-hidden bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-950 dark:to-purple-950"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
+      className="flex-1 flex flex-col p-6 space-y-4 overflow-hidden w-full"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
     >
-      {/* Main Chat Area */}
       <motion.div
-        className="flex-1 flex flex-col p-6 space-y-4 overflow-hidden"
+        className="flex flex-row gap-2 items-center justify-center"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <motion.div
-          className="flex flex-row gap-2 items-center justify-center"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
-          <Bot className="h-12 w-12 text-indigo-600" />
-          <h1 className="text-3xl flex text-center justify-center font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-            AI Research Assistant
-          </h1>
-        </motion.div>
-        <ScrollArea className="flex-1 h-full rounded-xl bg-white/80 dark:bg-gray-900/30 shadow-lg border border-indigo-100 dark:border-indigo-800">
-          <div className="space-y-6 p-4">
-            <AnimatePresence>
-              {messages.map((message, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3, delay: index * 0.05 }}
-                  className={`flex gap-4 ${message.role === "user" ? "justify-end" : "justify-start"}`}
-                >
-                  {message.role === "ai" && (
-                    <motion.div whileHover={{ scale: 1.1 }} transition={{ duration: 0.2 }}>
-                      <Avatar className="h-8 w-8 border-2 border-purple-200 bg-gradient-to-br from-indigo-100 to-purple-100">
-                        <AvatarImage src="/ai-avatar.png" />
-                        <AvatarFallback className="bg-gradient-to-br from-indigo-500 to-purple-500 text-white">
-                          AI
-                        </AvatarFallback>
-                      </Avatar>
-                    </motion.div>
-                  )}
+        <Bot className="h-12 w-12 text-blue-400" />
+        <h1 className="text-3xl flex text-center justify-center font-bold bg-gradient-to-r from-blue-400 to-blue-600 bg-clip-text text-transparent">
+          AI Research Assistant
+        </h1>
+      </motion.div>
+      <div className="flex-1 flex flex-col h-full w-full rounded-xl bg-gray-900/60 backdrop-blur-sm shadow-lg border border-blue-500/20 overflow-hidden">
 
-                  <motion.div whileHover={{ y: -2 }} transition={{ duration: 0.2 }}>
-                    <Card
-                      className={`max-w-3xl shadow-md ${message.role === "user"
-                          ? "bg-gradient-to-r from-indigo-100 to-indigo-50 border-indigo-200 dark:from-indigo-900/40 dark:to-indigo-800/40 dark:border-indigo-700"
-                          : "bg-gradient-to-r from-purple-50 to-white border-purple-200 dark:from-purple-900/40 dark:to-gray-900/40 dark:border-purple-700"
-                        }`}
-                    >
-                      <CardContent className="p-4 prose dark:prose-invert">
-                        <ReactMarkdown>{message.content}</ReactMarkdown>
-                      </CardContent>
-                      {message.role === "ai" && message.resources && (
-                        <CardFooter className="flex flex-wrap gap-2 p-4 pt-0">
-                          {message.resources.map((resource, i) => (
-                            <motion.a
-                              key={i}
-                              href={resource.url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-sm px-3 py-1 rounded-full bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-300 hover:bg-indigo-200 dark:hover:bg-indigo-800/50 transition-colors"
-                              whileHover={{ scale: 1.05 }}
-                              whileTap={{ scale: 0.95 }}
-                            >
-                              {resource.title}
-                            </motion.a>
-                          ))}
-                        </CardFooter>
-                      )}
-                    </Card>
-                  </motion.div>
-
-                  {message.role === "user" && (
-                    <motion.div whileHover={{ scale: 1.1 }} transition={{ duration: 0.2 }}>
-                      <Avatar className="h-8 w-8 border-2 border-indigo-200 bg-gradient-to-br from-indigo-100 to-indigo-50">
-                        <AvatarImage src="/user-avatar.png" />
-                        <AvatarFallback className="bg-gradient-to-br from-indigo-500 to-indigo-600 text-white">
-                          U
-                        </AvatarFallback>
-                      </Avatar>
-                    </motion.div>
-                  )}
-                </motion.div>
-              ))}
-            </AnimatePresence>
-
-            {isLoading && (
+      <ScrollArea className="flex-1 h-full w-full rounded-xl bg-gray-900/60 backdrop-blur-sm shadow-lg border border-blue-500/20">
+        <div className="space-y-6 p-4 w-full">
+          <AnimatePresence>
+            {messages.map((message, index) => (
               <motion.div
+                key={index}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3 }}
-                className="flex justify-start"
+                transition={{ duration: 0.3, delay: index * 0.05 }}
+                className={`flex gap-4 ${message.role === "user" ? "justify-end" : "justify-start"} w-full`}
               >
-                <div className="flex gap-3 max-w-[80%]">
-                  <Avatar className="h-8 w-8 border-2 border-purple-200 bg-gradient-to-br from-indigo-100 to-purple-100">
-                    <AvatarFallback className="bg-gradient-to-br from-indigo-500 to-purple-500 text-white">
-                      AI
-                    </AvatarFallback>
-                  </Avatar>
-                  <Card className="bg-gradient-to-r from-purple-50 to-white border-purple-200 dark:from-purple-900/40 dark:to-gray-900/40 dark:border-purple-700">
-                    <CardContent className="p-4">
-                      <div className="flex space-x-2">
+                {message.role === "ai" && (
+                  <motion.div whileHover={{ scale: 1.1 }} transition={{ duration: 0.2 }}>
+                    <Avatar className="h-8 w-8 flex-shrink-0 border-2 border-blue-500/30 bg-gradient-to-br from-blue-900/50 to-blue-700/50">
+                      <AvatarImage src="/ai-avatar.png" />
+                      <AvatarFallback className="bg-gradient-to-br from-blue-500 to-blue-700 text-white">
+                        AI
+                      </AvatarFallback>
+                    </Avatar>
+                  </motion.div>
+                )}
+
+                <motion.div whileHover={{ y: -2 }} transition={{ duration: 0.2 }} className="max-w-[85%]">
+                  <Card
+                    className={`shadow-md ${message.role === "user"
+                        ? "bg-gradient-to-r from-blue-900/40 to-blue-800/40 border-blue-500/30"
+                        : "bg-gradient-to-r from-gray-900/60 to-gray-900/30 border-blue-500/20"
+                      }`}
+                  >
+                    <CardContent className="p-4 prose dark:prose-invert max-w-full overflow-x-auto">
+                      <ReactMarkdown>{message.content}</ReactMarkdown>
+                    </CardContent>
+                    {message.role === "ai" && message.resources && (
+                      <CardFooter className="flex flex-wrap gap-2 p-4 pt-0">
+                        {message.resources.map((resource, i) => (
+                          <motion.a
+                            key={i}
+                            href={resource.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-sm px-3 py-1 rounded-full bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 transition-colors"
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                          >
+                            {resource.title}
+                          </motion.a>
+                        ))}
+                      </CardFooter>
+                    )}
+                  </Card>
+                </motion.div>
+
+                {message.role === "user" && (
+                  <motion.div whileHover={{ scale: 1.1 }} transition={{ duration: 0.2 }}>
+                    <Avatar className="h-8 w-8 flex-shrink-0 border-2 border-blue-500/30 bg-gradient-to-br from-blue-900/50 to-blue-800/50">
+                      <AvatarImage src="/user-avatar.png" />
+                      <AvatarFallback className="bg-gradient-to-br from-blue-600 to-blue-800 text-white">
+                        U
+                      </AvatarFallback>
+                    </Avatar>
+                  </motion.div>
+                )}
+              </motion.div>
+            ))}
+          </AnimatePresence>
+
+          {isLoading && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+              className="flex justify-start w-full"
+            >
+              <div className="flex gap-3 max-w-[85%]">
+                <Avatar className="h-8 w-8 flex-shrink-0 border-2 border-blue-500/30 bg-gradient-to-br from-blue-900/50 to-blue-700/50">
+                  <AvatarFallback className="bg-gradient-to-br from-blue-500 to-blue-700 text-white">
+                    AI
+                  </AvatarFallback>
+                </Avatar>
+                <Card className="bg-gradient-to-r from-gray-900/60 to-gray-900/30 border-blue-500/20">
+                  <CardContent className="p-4">
+                    <div className="flex space-x-2">
+                      <motion.div
+                        className="w-2 h-2 rounded-full bg-blue-400"
+                        animate={{ y: [0, -5, 0] }}
+                        transition={{ duration: 0.6, repeat: Number.POSITIVE_INFINITY, repeatType: "loop", delay: 0 }}
+                      />
+                      <motion.div
+                        className="w-2 h-2 rounded-full bg-blue-500"
+                        animate={{ y: [0, -5, 0] }}
+                        transition={{
+                          duration: 0.6,
+                          repeat: Number.POSITIVE_INFINITY,
+                          repeatType: "loop",
+                          delay: 0.15,
+                        }}
+                      />
+                      <motion.div
+                        className="w-2 h-2 rounded-full bg-blue-600"
+                        animate={{ y: [0, -5, 0] }}
+                        transition={{
+                          duration: 0.6,
+                          repeat: Number.POSITIVE_INFINITY,
+                          repeatType: "loop",
+                          delay: 0.3,
+                        }}
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </motion.div>
+          )}
+
+          <div ref={messagesEndRef} />
+        </div>
+      </ScrollArea>
+      </div>
+      <motion.form
+        onSubmit={handleSubmit}
+        className="relative w-full"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.2 }}
+      >
+        <Input
+          value={inputMessage}
+          onChange={(e) => setInputMessage(e.target.value)}
+          placeholder="Ask me anything..."
+          className="pr-12 h-14 rounded-2xl shadow-lg bg-gray-900/60 text-white border border-blue-500/30 focus-visible:ring-2 focus-visible:ring-blue-500/50 transition-all duration-300"
+        />
+        <motion.div className="absolute right-2 top-2" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+          <Button
+            type="submit"
+            disabled={isLoading}
+            className="h-10 w-10 rounded-xl bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-700 hover:to-blue-900 shadow-md hover:shadow-lg transition-all duration-300"
+          >
+            {isLoading ? (
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
+              >
+                <RefreshCcw className="h-4 w-4 text-white" />
+              </motion.div>
+            ) : (
+              <Send className="h-4 w-4 text-white" />
+            )}
+          </Button>
+        </motion.div>
+      </motion.form>
+    </motion.div>
+
+    {/* Resources Sidebar */}
+    <motion.div
+      className="w-96 border-l border-blue-500/20 p-6 bg-gray-900/30 backdrop-blur-sm flex-shrink-0 overflow-hidden"
+      initial={{ opacity: 0, x: 20 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ duration: 0.5, delay: 0.3 }}
+    >
+      <motion.h3
+        className="text-lg font-semibold mb-4 text-blue-400 flex items-center"
+        initial={{ y: -10 }}
+        animate={{ y: 0 }}
+        transition={{ duration: 0.3 }}
+      >
+        <span className="mr-2">📚</span> References & Resources
+      </motion.h3>
+      <ScrollArea className="h-[calc(100vh-8rem)] pr-4 w-full">
+      <AnimatePresence mode="wait">
+          {resources.length > 0 ? (
+            <motion.div
+              className="space-y-4"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              {resources.map((resource, index) => (
+                <motion.a
+                  key={index}
+                  href={resource.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block group"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3, delay: index * 0.1 }}
+                  whileHover={{ y: -5 }}
+                >
+                  <Card className="hover:shadow-lg transition-shadow duration-200 border-blue-500/20 overflow-hidden bg-gray-900/60 backdrop-blur-sm">
+                    <CardHeader className="text-sm font-medium text-blue-400 bg-gradient-to-r from-blue-900/30 to-blue-800/30 p-4">
+                      <div className="flex justify-between items-center">
+                        <span className="break-words overflow-hidden text-ellipsis">{resource.title}</span>
                         <motion.div
-                          className="w-2 h-2 rounded-full bg-indigo-400"
-                          animate={{ y: [0, -5, 0] }}
-                          transition={{ duration: 0.6, repeat: Number.POSITIVE_INFINITY, repeatType: "loop", delay: 0 }}
-                        />
-                        <motion.div
-                          className="w-2 h-2 rounded-full bg-indigo-500"
-                          animate={{ y: [0, -5, 0] }}
-                          transition={{
-                            duration: 0.6,
-                            repeat: Number.POSITIVE_INFINITY,
-                            repeatType: "loop",
-                            delay: 0.15,
-                          }}
-                        />
-                        <motion.div
-                          className="w-2 h-2 rounded-full bg-indigo-600"
-                          animate={{ y: [0, -5, 0] }}
-                          transition={{
-                            duration: 0.6,
-                            repeat: Number.POSITIVE_INFINITY,
-                            repeatType: "loop",
-                            delay: 0.3,
-                          }}
-                        />
+                          className="opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
+                          whileHover={{ rotate: 15 }}
+                        >
+                          <ExternalLink className="h-4 w-4 text-blue-400" />
+                        </motion.div>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="text-sm text-blue-100/80 p-4">
+                      <div className="break-words overflow-hidden">
+                        {resource.description}
+                      </div>
+                      <div className="mt-2 text-xs text-blue-400/70 truncate">
+                        {new URL(resource.url).hostname}
                       </div>
                     </CardContent>
                   </Card>
-                </div>
-              </motion.div>
-            )}
-
-            <div ref={messagesEndRef} />
-          </div>
-        </ScrollArea>
-
-        <motion.form
-          onSubmit={handleSubmit}
-          className="relative"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-        >
-          <Input
-            value={inputMessage}
-            onChange={(e) => setInputMessage(e.target.value)}
-            placeholder="Ask me anything..."
-            className="pr-12 h-14 rounded-2xl shadow-lg border border-indigo-200 dark:border-indigo-700 focus-visible:ring-2 focus-visible:ring-indigo-500 transition-all duration-300"
-          />
-          <motion.div className="absolute right-2 top-2" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-            <Button
-              type="submit"
-              disabled={isLoading}
-              className="h-10 w-10 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-md hover:shadow-lg transition-all duration-300"
-            >
-              {isLoading ? (
-                <motion.div
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
-                >
-                  <RefreshCcw className="h-4 w-4 text-white" />
-                </motion.div>
-              ) : (
-                <Send className="h-4 w-4 text-white" />
-              )}
-            </Button>
-          </motion.div>
-        </motion.form>
-      </motion.div>
-
-      {/* Resources Sidebar */}
-      <motion.div
-        className="w-96 border-l border-indigo-200 dark:border-indigo-800 p-6 bg-white/50 dark:bg-gray-900/30"
-        initial={{ opacity: 0, x: 20 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.5, delay: 0.3 }}
-      >
-        <motion.h3
-          className="text-lg font-semibold mb-4 text-indigo-900 dark:text-indigo-300 flex items-center"
-          initial={{ y: -10 }}
-          animate={{ y: 0 }}
-          transition={{ duration: 0.3 }}
-        >
-          <span className="mr-2">📚</span> References & Resources
-        </motion.h3>
-        <ScrollArea className="h-[calc(100vh-8rem)] pr-4">
-        <AnimatePresence mode="wait">
-            {resources.length > 0 ? (
-              <motion.div
-                className="space-y-4"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.3 }}
-              >
-                {resources.map((resource, index) => (
-                  <motion.a
-                    key={index}
-                    href={resource.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="block group"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3, delay: index * 0.1 }}
-                    whileHover={{ y: -5 }}
-                  >
-                    <Card className="hover:shadow-lg transition-shadow duration-200 border-indigo-100 dark:border-indigo-800 overflow-hidden">
-                      <CardHeader className="text-sm font-medium text-indigo-600 dark:text-indigo-400 bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/30 dark:to-purple-900/30 p-4">
-                        <div className="flex justify-between items-center">
-                          <span>{resource.title}</span>
-                          <motion.div
-                            className="opacity-0 group-hover:opacity-100 transition-opacity"
-                            whileHover={{ rotate: 15 }}
-                          >
-                            <ExternalLink className="h-4 w-4 text-indigo-500" />
-                          </motion.div>
-                        </div>
-                      </CardHeader>
-                      <CardContent className="text-sm text-indigo-700 dark:text-indigo-300 p-4">
-                        {resource.description}
-                        <div className="mt-2 text-xs text-indigo-500/70 dark:text-indigo-400/70 truncate">
-                          {new URL(resource.url).hostname}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </motion.a>
-                ))}
-              </motion.div>
-            ) : (
-              <ResourceSkeleton />
-            )}
-          </AnimatePresence>
-        </ScrollArea>
-      </motion.div>
+                </motion.a>
+              ))}
+            </motion.div>
+          ) : (
+            <ResourceSkeleton />
+          )}
+        </AnimatePresence>
+      </ScrollArea>
     </motion.div>
-  )
+  </motion.div>
+)
 }
-

@@ -127,7 +127,7 @@ const Hero = () => {
         onClick={() => {
           console.log("Navigating...");
           playButtonAudio();
-          setInterval(() => navigate("/"), 2700);
+          setInterval(() => navigate("/dashboard"), 2700);
         }}
         className="bg-black dark:bg-white rounded-full w-fit text-white dark:text-black px-4 py-2"
       >

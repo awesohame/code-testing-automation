@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react';
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
 import Editor from '@monaco-editor/react';
-import { Search, Zap, Wand2, Save, PlayCircle, Download, Github, RefreshCw } from 'lucide-react';
+import { Zap, Wand2, PlayCircle, Download } from 'lucide-react';
 import { StepIndicator } from '@/components/StepIndicator';
-import { RepositoryCard } from '@/components/RepositoryCard';
 import { FileExplorer } from '@/components/FileExplorer';
 import { APITable } from '@/components/APITable';
 import { TestResults } from '@/components/TestResults';
 import type { Repository, APIEndpoint, TestResult, GitHubContentItem, APIParameter } from '@/types';
+import RepositoryView from '@/components/RepositoryView';
 
 const STEPS = [
   'Repository Selection',
@@ -471,101 +471,40 @@ function App() {
       repo.description.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const handleRepositoryClick = (repo: Repository) => {
+    setSelectedRepo(repo);
+    setCurrentStep(1);
+  };
+
+
   return (
     <div className="min-h-screen bg-gray-900 text-white p-8">
-      <StepIndicator currentStep={currentStep} steps={STEPS} />
+      {
+        currentStep !== 0 && (  
+          <StepIndicator currentStep={currentStep} steps={STEPS} />
+        )
+      }
 
       {currentStep === 0 && (
-        <div className="space-y-6">
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <h1 className="text-3xl font-bold text-blue-400 flex items-center gap-2">
-                <Github className="w-8 h-8" />
-                GitHub Repository Viewer
-              </h1>
-              <div className="flex items-center gap-2 mt-2">
-                {isEditingUsername ? (
-                  <form onSubmit={handleUsernameSubmit} className="flex items-center gap-2">
-                    <input
-                      type="text"
-                      value={tempUsername}
-                      onChange={(e) => setTempUsername(e.target.value)}
-                      className="bg-gray-800 border border-gray-700 rounded px-2 py-1 text-sm focus:outline-none focus:border-blue-500"
-                      placeholder="GitHub username"
-                    />
-                    <button
-                      type="submit"
-                      className="text-blue-400 hover:text-blue-300 transition-colors text-sm"
-                    >
-                      Save
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setIsEditingUsername(false);
-                        setTempUsername(username);
-                      }}
-                      className="text-gray-400 hover:text-gray-300 transition-colors text-sm"
-                    >
-                      Cancel
-                    </button>
-                  </form>
-                ) : (
-                  <>
-                    <p className="text-gray-400">Viewing public repositories for</p>
-                    <button
-                      onClick={() => setIsEditingUsername(true)}
-                      className="text-blue-400 hover:text-blue-300 transition-colors font-medium flex items-center gap-1"
-                    >
-                      {username}
-                      <RefreshCw className="w-4 h-4" />
-                    </button>
-                  </>
-                )}
-              </div>
-            </div>
-            <button
-              onClick={() => fetchRepos(username)}
-              className="px-4 py-2 bg-blue-500 hover:bg-blue-600 rounded-lg flex items-center gap-2 transition-colors"
-              disabled={isLoading}
-            >
-              <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
-              Refresh
-            </button>
-          </div>
-
-          {error && (
-            <div className="bg-red-500/10 border border-red-500/20 text-red-400 px-4 py-3 rounded-lg">
-              {error}
-            </div>
-          )}
-
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search repositories..."
-              className="w-full pl-10 pr-4 py-2 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:border-blue-500"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filteredRepositories.map((repo) => (
-              <RepositoryCard
-                key={repo.id}
-                repository={repo}
-                onSelect={(repo) => {
-                  setSelectedRepo(repo);
-                  setCurrentStep(1);
-                }}
-                isSelected={selectedRepo?.id === repo.id}
-              />
-            ))}
-          </div>
-        </div>
+        <RepositoryView
+          username={username}
+          isEditingUsername={isEditingUsername}
+          setIsEditingUsername={setIsEditingUsername}
+          tempUsername={tempUsername}
+          setTempUsername={setTempUsername}
+          handleUsernameSubmit={handleUsernameSubmit}
+          fetchRepos={fetchRepos}
+          isLoading={isLoading}
+          error={error} 
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+          filteredRepositories={filteredRepositories}
+          handleRepositoryClick={handleRepositoryClick}
+          selectedRepo={selectedRepo}
+          setSelectedRepo={setSelectedRepo}
+        />
       )}
+
 
       {currentStep === 1 && (
         <PanelGroup direction="horizontal">

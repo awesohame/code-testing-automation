@@ -1,17 +1,16 @@
 import * as vscode from 'vscode';
-import * as http from 'http';
-import * as fs from 'fs';
-import * as path from 'path';
+import { startServer } from './services/server';
+import { ChatbotViewProvider } from './services/webviewProvider';
 
 // This method is called when your extension is activated
 export function activate(context: vscode.ExtensionContext) {
-  console.log('Extension "http-file-updater" is now active!');
+  console.log('Extension is now active!');
 
   // Create and start the HTTP server
-  const server = createHttpServer();
+  const server = startServer();
   
   // Create the sidebar webview
-  const provider = new FileUpdateViewProvider(context.extensionUri);
+  const provider = new ChatbotViewProvider(context.extensionUri);
   
   // Register the sidebar view provider
   const view = vscode.window.registerWebviewViewProvider(
@@ -27,11 +26,134 @@ export function activate(context: vscode.ExtensionContext) {
     }
   );
 
+  // Command to update active file info
+  const updateFileInfoCommand = vscode.commands.registerCommand(
+    'http-file-updater.updateFileInfo',
+    () => {
+      sendActiveFileInfo(provider);
+    }
+  );
+
+  // Command to show diff view
+  const showDiffCommand = vscode.commands.registerCommand(
+    'http-file-updater.showDiff',
+    async (originalContent: string, modifiedContent: string, fileName: string) => {
+      const originalUri = vscode.Uri.parse(`untitled:Original-${fileName}`);
+      const modifiedUri = vscode.Uri.parse(`untitled:Modified-${fileName}`);
+      
+      const diff = await vscode.commands.executeCommand(
+        'vscode.diff',
+        originalUri,
+        modifiedUri,
+        `${fileName} (Original ↔ AI Modified)`,
+        { preview: true }
+      );
+      
+      // Create the documents for the diff view
+      const originalDoc = await vscode.workspace.openTextDocument(originalUri);
+      const modifiedDoc = await vscode.workspace.openTextDocument(modifiedUri);
+      
+      // Edit the documents to add content
+      const originalEdit = new vscode.WorkspaceEdit();
+      const modifiedEdit = new vscode.WorkspaceEdit();
+      
+      originalEdit.insert(originalUri, new vscode.Position(0, 0), originalContent);
+      modifiedEdit.insert(modifiedUri, new vscode.Position(0, 0), modifiedContent);
+      
+      await vscode.workspace.applyEdit(originalEdit);
+      await vscode.workspace.applyEdit(modifiedEdit);
+
+      // Store the original file's uri and the modified content for later use
+      context.workspaceState.update('originalFileName', fileName);
+      context.workspaceState.update('modifiedContent', modifiedContent);
+
+      // Show action buttons for the diff view
+      showDiffActionButtons(originalContent, modifiedContent, fileName);
+      
+      return diff;
+    }
+  );
+
+  // Command to apply modified content to the current file
+  const applyChangesCommand = vscode.commands.registerCommand(
+    'http-file-updater.applyChanges',
+    async (modifiedContent: string, targetUri?: vscode.Uri) => {
+      if (targetUri) {
+        // Apply changes to the specified file
+        const document = await vscode.workspace.openTextDocument(targetUri);
+        const edit = new vscode.WorkspaceEdit();
+        const fullRange = new vscode.Range(
+          new vscode.Position(0, 0),
+          document.lineAt(document.lineCount - 1).range.end
+        );
+        
+        edit.replace(targetUri, fullRange, modifiedContent);
+        await vscode.workspace.applyEdit(edit);
+        
+        // Show success message
+        vscode.window.showInformationMessage('Changes applied successfully!');
+        
+        // Close the diff view
+        vscode.commands.executeCommand('workbench.action.closeActiveEditor');
+      } else {
+        // Try to apply to the active editor as a fallback
+        const editor = vscode.window.activeTextEditor;
+        if (editor) {
+          const document = editor.document;
+          const fullRange = new vscode.Range(
+            new vscode.Position(0, 0),
+            document.lineAt(document.lineCount - 1).range.end
+          );
+          
+          await editor.edit((editBuilder) => {
+            editBuilder.replace(fullRange, modifiedContent);
+          });
+          
+          // Show success message
+          vscode.window.showInformationMessage('Changes applied successfully!');
+        }
+      }
+    }
+  );
+
+  // Listen for active editor changes to update file info
+  vscode.window.onDidChangeActiveTextEditor(editor => {
+    if (editor) {
+      sendActiveFileInfo(provider);
+    }
+  }, null, context.subscriptions);
+
+  // Register the message handler for AI responses
+  context.subscriptions.push(
+    vscode.commands.registerCommand(
+      'http-file-updater.handleAIResponse',
+      async (response: string, options: { isEditMode: boolean, fileName: string, originalContent: string }) => {
+        if (options.isEditMode) {
+          // Process the response to remove markdown formatting if needed
+          const processedResponse = processCodeResponse(response);
+          
+          // Show diff view for edit mode
+          await vscode.commands.executeCommand(
+            'http-file-updater.showDiff',
+            options.originalContent,
+            processedResponse,
+            options.fileName
+          );
+        }
+      }
+    )
+  );
+
   // Add to subscriptions to ensure proper disposal
-  context.subscriptions.push(view, showSidebarCommand);
+  context.subscriptions.push(view, showSidebarCommand, updateFileInfoCommand, showDiffCommand, applyChangesCommand);
   
   // Store reference to provider for messaging
   global.fileUpdateProvider = provider;
+
+  // Initialize with current editor if one exists
+  if (vscode.window.activeTextEditor) {
+    sendActiveFileInfo(provider);
+  }
 
   // Make sure server gets closed on deactivation
   context.subscriptions.push({
@@ -44,236 +166,91 @@ export function activate(context: vscode.ExtensionContext) {
   });
 }
 
-// This method is called when your extension is deactivated
-export function deactivate() {
-  console.log('Extension "http-file-updater" is now deactivated!');
-}
-
-// Create HTTP server to handle POST requests
-function createHttpServer(): http.Server {
-  const server = http.createServer((req, res) => {
-    // Add CORS headers to all responses
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-    
-    // Handle preflight OPTIONS requests
-    if (req.method === 'OPTIONS') {
-      res.writeHead(204);
-      res.end();
-      return;
-    }
-    
-    if (req.method === 'POST' && req.url === '/update') {
-      let body = '';
-      
-      req.on('data', (chunk) => {
-        body += chunk.toString();
-      });
-      
-      req.on('end', () => {
-        try {
-          const data = JSON.parse(body);
-          const { name: newFileName, code, previousFileName } = data;
-          
-          if (!newFileName || !code) {
-            res.writeHead(400, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({ success: false, error: 'Missing required fields' }));
-            return;
-          }
-          
-          // Get the workspace root path
-          const workspaceFolders = vscode.workspace.workspaceFolders;
-          if (!workspaceFolders) {
-            res.writeHead(500, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({ success: false, error: 'No workspace folder is open' }));
-            return;
-          }
-          
-          const rootPath = workspaceFolders[0].uri.fsPath;
-          const fullNewFilePath = path.join(rootPath, newFileName);
-          
-          // Create directory structure if it doesn't exist
-          const dirName = path.dirname(fullNewFilePath);
-          if (!fs.existsSync(dirName)) {
-            fs.mkdirSync(dirName, { recursive: true });
-          }
-          
-          // Write the file
-          fs.writeFileSync(fullNewFilePath, code);
-          
-          // Send message to webview to update UI
-          const message = {
-            type: 'fileUpdated',
-            data: {
-              newFileName,
-              previousFileName
-            }
-          };
-          
-          if (global.fileUpdateProvider) {
-            global.fileUpdateProvider.updateContent(message);
-          }
-          
-          res.writeHead(200, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ success: true }));
-        } catch (error: any) {
-          console.error('Error processing request:', error);
-          res.writeHead(500, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ success: false, error: error.message }));
+// Helper function to show action buttons for diff view
+function showDiffActionButtons(originalContent: string, modifiedContent: string, fileName: string) {
+  // Create buttons in the editor title bar
+  vscode.window.showInformationMessage(
+    `Do you want to apply these changes to ${fileName}?`,
+    'Accept Changes', 'Discard'
+  ).then(selection => {
+    if (selection === 'Accept Changes') {
+      // Find the actual file in the workspace
+      vscode.workspace.findFiles(`**/${fileName}`).then(async (uris) => {
+        if (uris.length > 0) {
+          // Apply changes directly to the original file
+          await vscode.commands.executeCommand('http-file-updater.applyChanges', modifiedContent, uris[0]);
+        } else {
+          vscode.window.showErrorMessage(`Could not find ${fileName} to apply changes.`);
         }
       });
-    } else if (req.method !== 'OPTIONS') {
-      // Only return 404 for non-OPTIONS requests
-      res.writeHead(404, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ success: false, error: 'Endpoint not found' }));
+    } else if (selection === 'Discard') {
+      // Close diff view
+      vscode.commands.executeCommand('workbench.action.closeActiveEditor');
     }
   });
+}
+
+// Helper function to process code response - remove markdown formatting
+function processCodeResponse(response: string): string {
+  // First, check if the response is wrapped in code blocks with backticks
+  const codeBlockRegex = /^```([\w-]*)\n([\s\S]*?)```$/;
+  const match = response.match(codeBlockRegex);
   
-  // Listen on port 3000
-  server.listen(3000, () => {
-    console.log('HTTP server started on port 3000');
-  });
+  if (match) {
+    // Return just the code without the markdown formatting
+    return match[2];
+  }
   
-  return server;
+  // If there are multiple code blocks, try to extract the most relevant one
+  const multipleCodeBlocksRegex = /```([\w-]*)\n([\s\S]*?)```/g;
+  const matches = [...response.matchAll(multipleCodeBlocksRegex)];
+  
+  if (matches.length > 0) {
+    // Find the largest code block (likely the main content)
+    let largestBlock = '';
+    let maxLength = 0;
+    
+    for (const m of matches) {
+      if (m[2].length > maxLength) {
+        maxLength = m[2].length;
+        largestBlock = m[2];
+      }
+    }
+    
+    return largestBlock;
+  }
+  
+  // If no code blocks found, return the original response
+  return response;
+}
+
+// Helper function to send active file info to the webview
+function sendActiveFileInfo(provider: ChatbotViewProvider) {
+  const editor = vscode.window.activeTextEditor;
+  if (editor) {
+    const document = editor.document;
+    provider.updateContent({
+      type: 'activeFileInfo',
+      filename: document.fileName.split(/[\/\\]/).pop() || '',
+      content: document.getText(),
+      language: document.languageId
+    });
+  } else {
+    provider.updateContent({
+      type: 'activeFileInfo',
+      filename: '',
+      content: '',
+      language: ''
+    });
+  }
+}
+
+// This method is called when your extension is deactivated
+export function deactivate() {
+  console.log('Extension is now deactivated!');
 }
 
 // Declare global namespace for TypeScript
 declare global {
-  var fileUpdateProvider: FileUpdateViewProvider | undefined;
-}
-
-// WebView Provider for the sidebar
-class FileUpdateViewProvider implements vscode.WebviewViewProvider {
-  private _view?: vscode.WebviewView;
-  
-  constructor(private readonly _extensionUri: vscode.Uri) {}
-  
-  public resolveWebviewView(
-    webviewView: vscode.WebviewView,
-    context: vscode.WebviewViewResolveContext,
-    _token: vscode.CancellationToken
-  ) {
-    this._view = webviewView;
-    
-    webviewView.webview.options = {
-      enableScripts: true,
-      localResourceRoots: [this._extensionUri]
-    };
-    
-    webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
-  }
-  
-  public updateContent(message: any) {
-    if (this._view) {
-      this._view.webview.postMessage(message);
-    }
-  }
-  
-  private _getHtmlForWebview(webview: vscode.Webview): string {
-    // Get the local path to the icon file
-    const iconPath = vscode.Uri.joinPath(this._extensionUri, 'media', 'icon.png');
-    
-    // And convert it to a URI that the webview can use
-    const iconUri = webview.asWebviewUri(iconPath);
-    
-    return `<!DOCTYPE html>
-      <html lang="en">
-      <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>File Update Sidebar</title>
-        <style>
-          body {
-            font-family: var(--vscode-font-family);
-            color: var(--vscode-foreground);
-            padding: 10px;
-          }
-          .container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-          }
-          .icon {
-            width: 64px;
-            height: 64px;
-            margin-bottom: 10px;
-          }
-          .history {
-            width: 100%;
-            margin-top: 20px;
-          }
-          .history-item {
-            padding: 8px;
-            margin-bottom: 8px;
-            border-radius: 4px;
-            background-color: var(--vscode-editor-background);
-            border-left: 4px solid var(--vscode-activityBarBadge-background);
-          }
-          h2 {
-            font-size: 14px;
-            margin-bottom: 10px;
-          }
-        </style>
-      </head>
-      <body>
-        <div class="container">
-          <img class="icon" src="${iconUri}" alt="HTTP File Updater" />
-          <h1>HTTP File Updater</h1>
-          <p>Server running on port 3000</p>
-          <p>Endpoint: <code>/update</code></p>
-          
-          <div class="history">
-            <h2>Recent Updates</h2>
-            <div id="history-container"></div>
-          </div>
-        </div>
-  
-        <script>
-          const vscode = acquireVsCodeApi();
-          const historyContainer = document.getElementById('history-container');
-          const updates = [];
-          
-          // Listen for messages from the extension
-          window.addEventListener('message', event => {
-            const message = event.data;
-            
-            if (message.type === 'fileUpdated') {
-              // Add the update to the history
-              updates.unshift(message.data);
-              updateHistoryView();
-            }
-          });
-          
-          function updateHistoryView() {
-            historyContainer.innerHTML = '';
-            
-            if (updates.length === 0) {
-              historyContainer.innerHTML = '<p>No updates yet</p>';
-              return;
-            }
-            
-            updates.slice(0, 10).forEach(update => {
-              const item = document.createElement('div');
-              item.className = 'history-item';
-              
-              const from = update.previousFileName ? 
-                \`<p>From: <code>\${update.previousFileName}</code></p>\` : '';
-              
-              item.innerHTML = \`
-                <p>To: <code>\${update.newFileName}</code></p>
-                \${from}
-                <p>Updated: ${new Date().toLocaleTimeString()}</p>
-              \`;
-              
-              historyContainer.appendChild(item);
-            });
-          }
-          
-          // Initial render
-          updateHistoryView();
-        </script>
-      </body>
-      </html>`;
-  }
+  var fileUpdateProvider: ChatbotViewProvider | undefined;
 }
