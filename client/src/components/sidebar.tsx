@@ -13,9 +13,10 @@ import {
   Globe2,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger,  } from "./ui/tooltip";
 
 // Helper function to replace Next.js's cn utility
-const cn = (...classes) => {
+const cn = (...classes: any[]) => {
   return classes.filter(Boolean).join(" ");
 };
 
@@ -89,40 +90,7 @@ const Button = ({ variant, size, className, onClick, children }: any) => {
   );
 };
 
-// Tooltip components
-const TooltipProvider = ({ children }: any) => {
-  return <>{children}</>;
-};
 
-const Tooltip = ({ children }: any) => {
-  return <>{children}</>;
-};
-
-const TooltipTrigger = ({ asChild, children }: any) => {
-  return <>{children}</>;
-};
-
-const TooltipContent = ({ side, className, children }: any) => {
-  const [visible, setVisible] = React.useState(false);
-
-  return (
-    visible && (
-      <div
-        className={cn(
-          "absolute z-50 px-3 py-1.5 text-sm rounded-md shadow-md",
-          className
-        )}
-        style={{
-          right: "0",
-          transform: "translateX(100%)",
-          marginLeft: "10px",
-        }}
-      >
-        {children}
-      </div>
-    )
-  );
-};
 
 export default function AppSidebar() {
   const [pathname, setPathname] = React.useState(window.location.pathname);
@@ -146,6 +114,7 @@ export default function AppSidebar() {
   // Handle navigation and update pathname
   const handleNavigation = (href: string) => {
     navigate(href);
+    setPathname(href);
   };
 
   return (
@@ -192,8 +161,8 @@ export default function AppSidebar() {
               {routes.map((route) => (
                 <Tooltip key={route.href}>
                   <TooltipTrigger asChild>
-                    <a
-                      href={route.href}
+                    <button
+                      
                       onClick={(e) => {
                         e.preventDefault();
                         handleNavigation(route.href);
@@ -203,22 +172,22 @@ export default function AppSidebar() {
                         pathname === route.href
                           ? "bg-[#1e293b] text-white"
                           : "text-[#94a3b8] hover:text-white hover:bg-[#1e293b]",
-                        isCollapsed ? "justify-center" : "justify-start"
+                        isCollapsed ? "justify-center" : "justify-start p-3"
                       )}
                     >
                       <route.icon
                         className={cn(
-                          "h-5 w-5",
+                          "h-6 w-6",
                           isCollapsed ? "mr-0" : "mr-3",
                           pathname === route.href ? "text-white" : route.color
                         )}
                       />
                       {!isCollapsed && (
-                        <span className="text-sm font-medium">
+                        <span className="text-md font-medium">
                           {route.label}
                         </span>
                       )}
-                    </a>
+                    </button>
                   </TooltipTrigger>
                   {isCollapsed && (
                     <TooltipContent

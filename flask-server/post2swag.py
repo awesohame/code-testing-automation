@@ -1,14 +1,14 @@
-from flask import Flask, request, jsonify, send_file
-from flask_cors import CORS
+# from flask import Flask, request, jsonify, send_file
+# from flask_cors import CORS
 import json
 import re
 import os
 import tempfile
 from collections import defaultdict
 
-app = Flask(__name__)
-# Configure CORS to allow credentials and requests from the frontend
-CORS(app, supports_credentials=True, origins=["http://localhost:5173"])
+# app = Flask(__name__)
+# # Configure CORS to allow credentials and requests from the frontend
+# CORS(app, supports_credentials=True, origins=["http://localhost:5173"])
 
 def convert_postman_to_swagger(postman_json):
     """
@@ -337,52 +337,3 @@ def sanitize_operation_id(name):
         return "operation"
     return words[0].lower() + ''.join(word.capitalize() for word in words[1:])
 
-@app.route('/convert', methods=['POST'])
-def convert():
-    """
-    API endpoint to handle file upload and conversion
-    """
-    if 'file' not in request.files:
-        return jsonify({"error": "No file part"}), 400
-    
-    file = request.files['file']
-    
-    if file.filename == '':
-        return jsonify({"error": "No selected file"}), 400
-    
-    if file:
-        try:
-            # Read the file content
-            postman_json = json.loads(file.read().decode('utf-8'))
-            
-            # Convert to Swagger
-            swagger_json = convert_postman_to_swagger(postman_json)
-            
-            # Create a temporary file
-            temp_dir = tempfile.gettempdir()
-            output_filename = os.path.splitext(file.filename)[0] + "_swagger.json"
-            output_path = os.path.join(temp_dir, output_filename)
-            
-            # Write the Swagger JSON to the temporary file
-            with open(output_path, 'w', encoding='utf-8') as f:
-                json.dump(swagger_json, f, indent=2)
-            
-            # Send the file as a response
-            return send_file(
-                output_path,
-                as_attachment=True,
-                download_name=output_filename,
-                mimetype='application/json'
-            )
-            
-        except Exception as e:
-            return jsonify({"error": str(e)}), 500
-    
-    return jsonify({"error": "Unknown error"}), 500
-
-@app.route('/', methods=['GET'])
-def home():
-    return jsonify({"message": "Postman to Swagger Converter API is running"})
-
-if __name__ == '__main__':
-    app.run(debug=True, port=5000)

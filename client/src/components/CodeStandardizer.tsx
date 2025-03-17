@@ -61,7 +61,7 @@ const CodeStandardizer: React.FC = () => {
 
     try {
       const response = await axios.post<StandardizerResponse>(
-        "http://127.0.0.1:8000/standardize/",
+        "http://127.0.0.1:8001/standardize/",
         { code: code },
         {
           headers: {
