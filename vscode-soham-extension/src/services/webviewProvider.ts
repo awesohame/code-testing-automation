@@ -72,6 +72,7 @@ export class ChatbotViewProvider implements vscode.WebviewViewProvider {
         fileName = message.context.filename;
         
         if (isEditMode) {
+          // Modified prompt to request 3 different versions
           prompt = `I'm working with a file named ${message.context.filename} (${message.context.language}). 
 Here's the current code:
 \`\`\`${message.context.language}
@@ -80,7 +81,25 @@ ${message.context.content}
 
 My request is: ${message.text}
 
-IMPORTANT: Respond ONLY with the complete modified code. Do not include any explanations, markdown formatting, or other text before or after the code.`;
+IMPORTANT: Generate 3 DIFFERENT versions of the modified code. 
+Format your response exactly like this:
+
+VERSION 1:
+\`\`\`${message.context.language}
+[first version of the complete code]
+\`\`\`
+
+VERSION 2:
+\`\`\`${message.context.language}
+[second version of the complete code]
+\`\`\`
+
+VERSION 3:
+\`\`\`${message.context.language}
+[third version of the complete code]
+\`\`\`
+
+Each version should be a complete solution that reflects different implementation approaches. Do not include any explanations.`;
         } else {
           prompt = `I'm working with a file named ${message.context.filename} (${message.context.language}). 
 Here's the relevant content:
@@ -103,7 +122,7 @@ My question is: ${message.text}`;
         text: text
       });
       
-      // Handle edit mode with diff view
+      // Handle edit mode with diff view for multiple versions
       if (isEditMode) {
         await vscode.commands.executeCommand(
           'http-file-updater.handleAIResponse',

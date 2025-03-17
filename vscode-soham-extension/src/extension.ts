@@ -151,38 +151,69 @@ export function activate(context: vscode.ExtensionContext) {
   // Command to show diff view
   const showDiffCommand = vscode.commands.registerCommand(
     'http-file-updater.showDiff',
-    async (originalContent: string, modifiedContent: string, fileName: string) => {
+    async (originalContent: string, modifiedContent: string, fileName: string, allVersions?: string[], currentVersionIndex: number = 0) => {
       const originalUri = vscode.Uri.parse(`untitled:Original-${fileName}`);
       const modifiedUri = vscode.Uri.parse(`untitled:Modified-${fileName}`);
       
+      // Create a new diff view
       const diff = await vscode.commands.executeCommand(
         'vscode.diff',
         originalUri,
         modifiedUri,
-        `${fileName} (Original ↔ AI Modified)`,
+        `${fileName} (Original ↔ AI Modified${allVersions && allVersions.length > 0 ? ` - Version ${currentVersionIndex + 1}/${allVersions.length}` : ''})`,
         { preview: true }
       );
       
-      // Create the documents for the diff view
-      const originalDoc = await vscode.workspace.openTextDocument(originalUri);
-      const modifiedDoc = await vscode.workspace.openTextDocument(modifiedUri);
-      
-      // Edit the documents to add content
-      const originalEdit = new vscode.WorkspaceEdit();
-      const modifiedEdit = new vscode.WorkspaceEdit();
-      
-      originalEdit.insert(originalUri, new vscode.Position(0, 0), originalContent);
-      modifiedEdit.insert(modifiedUri, new vscode.Position(0, 0), modifiedContent);
-      
-      await vscode.workspace.applyEdit(originalEdit);
-      await vscode.workspace.applyEdit(modifiedEdit);
-
+      try {
+        // Create the documents for the diff view
+        const originalDoc = await vscode.workspace.openTextDocument(originalUri);
+        const modifiedDoc = await vscode.workspace.openTextDocument(modifiedUri);
+        
+        // First, clear any existing content
+        const originalEdit = new vscode.WorkspaceEdit();
+        const modifiedEdit = new vscode.WorkspaceEdit();
+        
+        // Get the full range of each document (to clear if there's existing content)
+        if (originalDoc.getText().length > 0) {
+          const originalFullRange = new vscode.Range(
+            new vscode.Position(0, 0),
+            originalDoc.lineAt(originalDoc.lineCount - 1).range.end
+          );
+          originalEdit.replace(originalUri, originalFullRange, '');
+        }
+        
+        if (modifiedDoc.getText().length > 0) {
+          const modifiedFullRange = new vscode.Range(
+            new vscode.Position(0, 0),
+            modifiedDoc.lineAt(modifiedDoc.lineCount - 1).range.end
+          );
+          modifiedEdit.replace(modifiedUri, modifiedFullRange, '');
+        }
+        
+        // Apply the edits to clear existing content
+        await vscode.workspace.applyEdit(originalEdit);
+        await vscode.workspace.applyEdit(modifiedEdit);
+        
+        // Now insert the new content
+        const originalInsertEdit = new vscode.WorkspaceEdit();
+        const modifiedInsertEdit = new vscode.WorkspaceEdit();
+        
+        originalInsertEdit.insert(originalUri, new vscode.Position(0, 0), originalContent);
+        modifiedInsertEdit.insert(modifiedUri, new vscode.Position(0, 0), modifiedContent);
+        
+        await vscode.workspace.applyEdit(originalInsertEdit);
+        await vscode.workspace.applyEdit(modifiedInsertEdit);
+      } catch (error) {
+        console.error('Error setting up diff view:', error);
+        vscode.window.showErrorMessage(`Error setting up diff view: ${error}`);
+      }
+  
       // Store the original file's uri and the modified content for later use
       context.workspaceState.update('originalFileName', fileName);
       context.workspaceState.update('modifiedContent', modifiedContent);
-
+  
       // Show action buttons for the diff view
-      showDiffActionButtons(originalContent, modifiedContent, fileName);
+      showDiffActionButtons(originalContent, modifiedContent, fileName, allVersions, currentVersionIndex);
       
       return diff;
     }
@@ -262,16 +293,31 @@ export function activate(context: vscode.ExtensionContext) {
       'http-file-updater.handleAIResponse',
       async (response: string, options: { isEditMode: boolean, fileName: string, originalContent: string }) => {
         if (options.isEditMode) {
-          // Process the response to remove markdown formatting if needed
-          const processedResponse = processCodeResponse(response);
+          // Parse versions from the response
+          let versions = parseVersionsFromText(response);
           
-          // Show diff view for edit mode
-          await vscode.commands.executeCommand(
-            'http-file-updater.showDiff',
-            options.originalContent,
-            processedResponse,
-            options.fileName
-          );
+          // If no versions could be parsed, fall back to the old behavior
+          if (versions.length === 0) {
+            const processedResponse = processCodeResponse(response);
+            
+            // Show diff view for edit mode
+            await vscode.commands.executeCommand(
+              'http-file-updater.showDiff',
+              options.originalContent,
+              processedResponse,
+              options.fileName
+            );
+          } else {
+            // Show diff view with the first version and all versions
+            await vscode.commands.executeCommand(
+              'http-file-updater.showDiff',
+              options.originalContent,
+              versions[0],
+              options.fileName,
+              versions,
+              0
+            );
+          }
         }
       }
     )
@@ -306,39 +352,138 @@ export function activate(context: vscode.ExtensionContext) {
   });
 }
 
+
+function parseVersionsFromText(text: string): string[] {
+  const versions: string[] = [];
+  
+  // Regular expression to match version blocks
+  const versionRegex = /VERSION \d+:\s*```[\w-]*\s*([\s\S]*?)```/g;
+  
+  let match;
+  while ((match = versionRegex.exec(text)) !== null) {
+    if (match[1] && match[1].trim()) {
+      versions.push(match[1].trim());
+    }
+  }
+  
+  return versions;
+}
+
+function applyChangesToFile(modifiedContent: string, fileName: string) {
+  if (fileName.endsWith('.test.js') || fileName.endsWith('.spec.js')) {
+    // For test files, save to server/__tests__ folder
+    const workspaceFolders = vscode.workspace.workspaceFolders;
+    if (workspaceFolders) {
+      const rootPath = workspaceFolders[0].uri.fsPath;
+      const testFilePath = vscode.Uri.file(`${rootPath}/server/__tests__/${fileName}`);
+      
+      vscode.commands.executeCommand('http-file-updater.applyChanges', modifiedContent, testFilePath);
+    }
+  } else {
+    // For non-test files, find the actual file in the workspace
+    vscode.workspace.findFiles(`**/${fileName}`).then(async (uris) => {
+      if (uris.length > 0) {
+        // Apply changes directly to the original file
+        await vscode.commands.executeCommand('http-file-updater.applyChanges', modifiedContent, uris[0]);
+      } else {
+        vscode.window.showErrorMessage(`Could not find ${fileName} to apply changes.`);
+      }
+    });
+  }
+}
 // Helper function to show action buttons for diff view
-function showDiffActionButtons(originalContent: string, modifiedContent: string, fileName: string) {
+function showDiffActionButtons(originalContent: string, modifiedContent: string, fileName: string, allVersions?: string[], currentVersionIndex: number = 0) {
+  // Parse versions if they're provided in a single string
+  let versions = allVersions || [];
+  if (!allVersions && modifiedContent.includes("VERSION 1:")) {
+    versions = parseVersionsFromText(modifiedContent);
+    // If we successfully parsed versions, use the first one as the initial modified content
+    if (versions.length > 0) {
+      modifiedContent = versions[0];
+    }
+  }
+  
   // Create buttons in the editor title bar
+  const buttons = [];
+  
+  // Add version navigation buttons if we have multiple versions
+  if (versions.length > 1) {
+    buttons.push('← Previous');
+    buttons.push(`${currentVersionIndex + 1}/${versions.length}`);
+    buttons.push('Next →');
+  }
+  
+  // Add accept/discard buttons
+  buttons.push('Accept Changes');
+  buttons.push('Discard');
+  
   vscode.window.showInformationMessage(
     `Do you want to apply these changes to ${fileName}?`,
-    'Accept Changes', 'Discard'
+    ...buttons
   ).then(selection => {
     if (selection === 'Accept Changes') {
-      if (fileName.endsWith('.test.js') || fileName.endsWith('.spec.js')) {
-        // For test files, save to server/__tests__ folder
-        const workspaceFolders = vscode.workspace.workspaceFolders;
-        if (workspaceFolders) {
-          const rootPath = workspaceFolders[0].uri.fsPath;
-          const testFilePath = vscode.Uri.file(`${rootPath}/server/__tests__/${fileName}`);
-          
-          vscode.commands.executeCommand('http-file-updater.applyChanges', modifiedContent, testFilePath);
-        }
-      } else {
-        // For non-test files, find the actual file in the workspace
-        vscode.workspace.findFiles(`**/${fileName}`).then(async (uris) => {
-          if (uris.length > 0) {
-            // Apply changes directly to the original file
-            await vscode.commands.executeCommand('http-file-updater.applyChanges', modifiedContent, uris[0]);
-          } else {
-            vscode.window.showErrorMessage(`Could not find ${fileName} to apply changes.`);
-          }
-        });
-      }
+      applyChangesToFile(modifiedContent, fileName);
     } else if (selection === 'Discard') {
       // Close diff view
       vscode.commands.executeCommand('workbench.action.closeActiveEditor');
+    } else if (selection === 'Next →' || selection === '← Previous') {
+      // Calculate the new index
+      const nextIndex = selection === 'Next →' 
+        ? (currentVersionIndex + 1) % versions.length
+        : (currentVersionIndex - 1 + versions.length) % versions.length;
+      
+      // Close the current diff view and open a new one with the next version
+      vscode.commands.executeCommand('workbench.action.closeActiveEditor').then(() => {
+        vscode.commands.executeCommand(
+          'http-file-updater.showDiff',
+          originalContent,
+          versions[nextIndex],
+          fileName,
+          versions,
+          nextIndex
+        );
+      });
     }
   });
+}
+
+function registerVersionNavigationCommands(context: vscode.ExtensionContext) {
+  // Command to show the next version
+  const showNextVersionCommand = vscode.commands.registerCommand(
+    'http-file-updater.showNextVersion',
+    async (originalContent: string, versions: string[], fileName: string, currentVersionIndex: number) => {
+      const nextIndex = (currentVersionIndex + 1) % versions.length;
+      await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
+      await vscode.commands.executeCommand(
+        'http-file-updater.showDiff',
+        originalContent,
+        versions[nextIndex],
+        fileName,
+        versions,
+        nextIndex
+      );
+    }
+  );
+
+  // Command to show the previous version
+  const showPreviousVersionCommand = vscode.commands.registerCommand(
+    'http-file-updater.showPreviousVersion',
+    async (originalContent: string, versions: string[], fileName: string, currentVersionIndex: number) => {
+      const prevIndex = (currentVersionIndex - 1 + versions.length) % versions.length;
+      await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
+      await vscode.commands.executeCommand(
+        'http-file-updater.showDiff',
+        originalContent,
+        versions[prevIndex],
+        fileName,
+        versions,
+        prevIndex
+      );
+    }
+  );
+
+  // Add to subscriptions
+  context.subscriptions.push(showNextVersionCommand, showPreviousVersionCommand);
 }
 
 // Helper function to process code response - remove markdown formatting
@@ -374,6 +519,7 @@ function processCodeResponse(response: string): string {
   // If no code blocks found, return the original response
   return response;
 }
+
 
 // Helper function to send active file info to the webview
 function sendActiveFileInfo(provider: ChatbotViewProvider) {
