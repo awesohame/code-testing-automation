@@ -263,26 +263,43 @@ const CodeAnalyzerPanel: React.FC<CodeAnalyzerPanelProps> = ({
             </div>
           ) : testResult ? (
             <div className="flex flex-col h-full">
-              <div className="border-b border-gray-800">
-                <div className="flex">
-                  {["test", "instructions", "coverage"].map((tab) => (
-                    <button
-                      key={tab}
-                      className={`px-4 py-2 text-sm ${activeTab === tab
-                          ? "text-green-400 border-b-2 border-green-400"
-                          : "text-gray-500 hover:text-gray-300"
-                        }`}
-                      onClick={() => setActiveTab(tab as any)}
+              <Tabs
+                defaultValue="test"
+                value={activeTab}
+                onValueChange={(value) => setActiveTab(value as any)}
+                className="w-full"
+              >
+                <div className="border-b border-blue-500/20">
+                  <TabsList className="bg-transparent h-auto p-0">
+                    <TabsTrigger
+                      value="test"
+                      className={cn(
+                        "rounded-none border-b-2 border-transparent px-4 py-2 data-[state=active]:border-blue-400 data-[state=active]:text-blue-400 data-[state=active]:shadow-none",
+                        "text-blue-100/80 hover:text-f8fafc"
+                      )}
                     >
-                      {tab === "test"
-                        ? "Test Code"
-                        : tab === "instructions"
-                          ? "Setup Instructions"
-                          : "Coverage Analysis"}
-                    </button>
-                  ))}
+                      Test Code
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value="instructions"
+                      className={cn(
+                        "rounded-none border-b-2 border-transparent px-4 py-2 data-[state=active]:border-blue-400 data-[state=active]:text-blue-400 data-[state=active]:shadow-none",
+                        "text-blue-100/80 hover:text-f8fafc"
+                      )}
+                    >
+                      Setup Instructions
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value="coverage"
+                      className={cn(
+                        "rounded-none border-b-2 border-transparent px-4 py-2 data-[state=active]:border-blue-400 data-[state=active]:text-blue-400 data-[state=active]:shadow-none",
+                        "text-blue-100/80 hover:text-f8fafc"
+                      )}
+                    >
+                      Coverage Analysis
+                    </TabsTrigger>
+                  </TabsList>
                 </div>
-              </div>
 
                 <ScrollArea className="flex-grow h-[calc(100vh-100px)] ">
                   <TabsContent value="test" className="m-0 p-4 w-fit">
