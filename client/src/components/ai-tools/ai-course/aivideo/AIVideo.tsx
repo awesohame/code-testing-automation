@@ -84,9 +84,6 @@ interface Question {
   correctAns: string
 }
 
-interface YoutubeSearchProps {
-  title: string
-}
 
 interface Question {
   id: string
@@ -94,22 +91,19 @@ interface Question {
   answer: string[]
 }
 
-interface QuestionsProps {
-  ques: Question[] | null
-}
 
 export default function CoursePage() {
   const navigate = useNavigate()
   const [selected, setSelected] = useState({ unit: 1, chapter: 1, title: "" })
   const [ques, setques] = useState([])
   const [searchParams] = useSearchParams()
-  const title = searchParams.get("title")
+  const title = searchParams.get("title") 
   const data = searchParams.get("data")
   const [selectedTitle, setSelectedTitle] = useState("")
   const [dubbedVideo, setDubbedVideo] = useState("")
   const [loading, setLoading] = useState(false)
   const [loadingMessage, setLoadingMessage] = useState("")
-  const [error, setError] = useState("")
+
   const [selectedAnswers, setSelectedAnswers] = useState<Record<string, string>>({})
   const [isLocked, setIsLocked] = useState<Record<string, boolean>>({})
   const [progress, setProgress] = useState(0)

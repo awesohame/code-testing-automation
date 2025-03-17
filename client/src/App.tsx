@@ -14,6 +14,10 @@ import RoutingPage from "./components/ai-tools/routing";
 import AiCourse from "./pages/AiCourse";
 import { Researcher } from "./components/ai-tools/pocket-perplexity/Researcher";
 import ResourceFetcher from "./components/ai-tools/resources-hub/Fetcher";
+import AiVideo from "./pages/AiVideo";
+import SignInPage from "./pages/SignIn";
+import SignUpPage from "./pages/SignUp";
+import OnboardingForm from "./pages/Onboarding";
 
 const App: React.FC = () => {
   const handleRepoSubmit = (owner: string, name: string) => {
@@ -22,6 +26,9 @@ const App: React.FC = () => {
 
   return (
     <Routes>
+      <Route path="/sign-in/*" element={<SignInPage />} />
+      <Route path="/sign-up/*" element={<SignUpPage />} />
+      <Route path="/onboarding/*" element={<OnboardingForm />} />
       <Route
         path="/"
         element={<RepoSelectionPage onSubmit={handleRepoSubmit} />}
@@ -42,7 +49,8 @@ const App: React.FC = () => {
         <Route path="/ai-course/aivideo" element={<AiVideo />} />
         <Route path="/researcher" element={<Researcher />} />
         <Route path="/resources" element={<ResourceFetcher />} />
-        <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        {/* <Route path="*" element={<Navigate to="/dashboard" replace />} /> */}
+        
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />
