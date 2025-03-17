@@ -31,7 +31,10 @@ const App: React.FC = () => {
       <Route path="/sign-up/*" element={<SignUpPage />} />
       <Route path="/onboarding/*" element={<OnboardingForm />} />
       <Route path="/" element={<Landing />} />
-      <Route path="/unit-test/:repoOwner/:repoName" element={<RepoViewerPage />} />
+      <Route
+        path="/unit-test/:repoOwner/:repoName"
+        element={<RepoViewerPage />}
+      />
 
       <Route element={<RootLayout />}>
         <Route path="/dashboard" element={<DashboardPage />} />
@@ -46,7 +49,6 @@ const App: React.FC = () => {
         <Route path="/researcher" element={<Researcher />} />
         <Route path="/resources" element={<ResourceHub />} />
       </Route>
-
     </Routes>
   );
 };
