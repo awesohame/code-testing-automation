@@ -76,7 +76,7 @@ function handleUpdateRequest(req: http.IncomingMessage, res: http.ServerResponse
 
 // Process file update data
 function processFileUpdate(data: any, res: http.ServerResponse): void {
-  const { name: newFileName, code, previousFileName } = data;
+  const { name: newFileName, code, previousFileName, originalFilePath } = data;
   
   if (!newFileName || !code) {
     sendErrorResponse(res, 400, 'Missing required fields');
@@ -89,7 +89,7 @@ function processFileUpdate(data: any, res: http.ServerResponse): void {
     return;
   }
   
-  writeFile(workspacePath, newFileName, code);
+  writeFile(workspacePath, newFileName, code, originalFilePath);
   notifyWebview(newFileName, previousFileName);
   
   res.writeHead(200, { 'Content-Type': 'application/json' });
@@ -106,9 +106,29 @@ function getWorkspacePath(): string | null {
   return workspaceFolders[0].uri.fsPath;
 }
 
+// Helper function to check if a file is a test file
+function isTestFile(fileName: string): boolean {
+  return fileName.endsWith('.test.js') || fileName.endsWith('.test.ts') || 
+         fileName.endsWith('.spec.js') || fileName.endsWith('.spec.ts');
+}
+
 // Write content to file
-function writeFile(rootPath: string, fileName: string, content: string): void {
-  const fullFilePath = path.join(rootPath, fileName);
+function writeFile(rootPath: string, fileName: string, content: string, originalFilePath?: string): void {
+  let fullFilePath;
+  
+  if (isTestFile(fileName)) {
+    // For test files, redirect to server/__tests__ folder
+    const baseFileName = path.basename(fileName);
+    fullFilePath = path.join(rootPath, 'server', '__tests__', baseFileName);
+    
+    // Fix imports in content if we have originalFilePath
+    if (originalFilePath) {
+      content = updateImportPaths(content, originalFilePath, rootPath);
+    }
+  } else {
+    // For other files, maintain the original behavior
+    fullFilePath = path.join(rootPath, fileName);
+  }
   
   // Create directory structure if it doesn't exist
   const dirName = path.dirname(fullFilePath);
@@ -118,6 +138,53 @@ function writeFile(rootPath: string, fileName: string, content: string): void {
   
   // Write the file
   fs.writeFileSync(fullFilePath, content);
+}
+
+// Update import paths in test file content
+function updateImportPaths(content: string, originalFilePath: string, rootPath: string): string {
+  // Convert absolute path to relative path from workspace root
+  const relativePath = originalFilePath.replace(rootPath, '').replace(/^[\/\\]/, '');
+  
+  // Determine the directory structure
+  const parts = relativePath.split(/[\/\\]/);
+  const fileName = parts.pop() || '';
+  const directoryPath = parts.join('/');
+  
+  // Different regex patterns for different import styles
+  const requireRegex = /require\(['"]\.\/([^'"]+)['"]\)/g;
+  const importRegex = /from ['"]\.\/([^'"]+)['"]/g;
+  const importRegex2 = /import ['"]\.\/([^'"]+)['"]/g;
+  
+  // Calculate relative path from test to source
+  // Test will be in server/__tests__/ and needs to reference original location
+  let updatedContent = content;
+  
+  // Replace require statements
+  updatedContent = updatedContent.replace(requireRegex, (match, p1) => {
+    // If p1 is the filename without extension, add correct relative path
+    if (p1 === fileName.replace(/\.(js|ts|jsx|tsx)$/, '')) {
+      return `require('../${directoryPath ? directoryPath + '/' : ''}${p1}')`;
+    }
+    return match;
+  });
+  
+  // Replace import statements
+  updatedContent = updatedContent.replace(importRegex, (match, p1) => {
+    if (p1 === fileName.replace(/\.(js|ts|jsx|tsx)$/, '')) {
+      return `from '../${directoryPath ? directoryPath + '/' : ''}${p1}'`;
+    }
+    return match;
+  });
+  
+  // Replace direct imports
+  updatedContent = updatedContent.replace(importRegex2, (match, p1) => {
+    if (p1 === fileName.replace(/\.(js|ts|jsx|tsx)$/, '')) {
+      return `import '../${directoryPath ? directoryPath + '/' : ''}${p1}'`;
+    }
+    return match;
+  });
+  
+  return updatedContent;
 }
 
 // Send error response

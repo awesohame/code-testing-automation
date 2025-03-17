@@ -146,10 +146,11 @@ const CodeAnalyzerPanel: React.FC<CodeAnalyzerPanelProps> = ({
       Return a structured response with:
       1. The programming language of the test
       2. Complete test code that covers all significant functions and edge cases
-      3. Detailed instructions on how to set up the testing environment, install necessary dependencies, and run the tests in a local environment
+      3. Short and brief stepwise instructions on how to install necessary dependencies.
       4. An analysis of test coverage including estimated percentage, covered functions, uncovered areas, and notes
       
       Make sure the test code:
+      - Has proper routing as it is going to be stored in the folder ./server/__tests__/ so mostly the imports will be "../file/path/from/root/"
       - Uses appropriate testing framework for the language
       - Includes proper mocking of external dependencies
       - Has clear descriptions of what each test verifies
@@ -239,8 +240,8 @@ const CodeAnalyzerPanel: React.FC<CodeAnalyzerPanelProps> = ({
                     <button
                       key={tab}
                       className={`px-4 py-2 text-sm ${activeTab === tab
-                          ? "text-green-400 border-b-2 border-green-400"
-                          : "text-gray-500 hover:text-gray-300"
+                        ? "text-green-400 border-b-2 border-green-400"
+                        : "text-gray-500 hover:text-gray-300"
                         }`}
                       onClick={() => setActiveTab(tab as any)}
                     >

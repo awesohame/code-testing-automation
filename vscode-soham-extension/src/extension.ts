@@ -1,6 +1,8 @@
 import * as vscode from 'vscode';
+import * as path from 'path';
 import { startServer } from './services/server';
 import { ChatbotViewProvider } from './services/webviewProvider';
+const axios = require('axios');
 
 // This method is called when your extension is activated
 export function activate(context: vscode.ExtensionContext) {
@@ -116,12 +118,31 @@ export function activate(context: vscode.ExtensionContext) {
     }
   );
 
-  // Listen for active editor changes to update file info
-  vscode.window.onDidChangeActiveTextEditor(editor => {
-    if (editor) {
-      sendActiveFileInfo(provider);
+  // Command to generate test file
+  const generateTestFileCommand = vscode.commands.registerCommand(
+    'http-file-updater.generateTest',
+    async (originalFilePath: string, fileName: string, content: string) => {
+      const baseFileName = path.basename(fileName);
+      const testFileName = baseFileName.replace(/\.(js|ts|jsx|tsx)$/, '.test.js');
+      
+      // Prepare data for the server
+      const data = {
+        name: testFileName,
+        code: content,
+        originalFilePath: originalFilePath
+      };
+      
+      // Send HTTP request to update file
+      axios.post('http://localhost:3000/update', data)
+        .then(() => {
+          vscode.window.showInformationMessage(`Test file created at server/__tests__/${testFileName}`);
+        })
+        .catch((err:any) => {
+          console.error('Error creating test file:', err);
+          vscode.window.showErrorMessage(`Failed to create test file: ${err.message}`);
+        });
     }
-  }, null, context.subscriptions);
+  );
 
   // Register the message handler for AI responses
   context.subscriptions.push(
@@ -145,7 +166,14 @@ export function activate(context: vscode.ExtensionContext) {
   );
 
   // Add to subscriptions to ensure proper disposal
-  context.subscriptions.push(view, showSidebarCommand, updateFileInfoCommand, showDiffCommand, applyChangesCommand);
+  context.subscriptions.push(
+    view, 
+    showSidebarCommand, 
+    updateFileInfoCommand, 
+    showDiffCommand, 
+    applyChangesCommand,
+    generateTestFileCommand
+  );
   
   // Store reference to provider for messaging
   global.fileUpdateProvider = provider;
@@ -174,15 +202,26 @@ function showDiffActionButtons(originalContent: string, modifiedContent: string,
     'Accept Changes', 'Discard'
   ).then(selection => {
     if (selection === 'Accept Changes') {
-      // Find the actual file in the workspace
-      vscode.workspace.findFiles(`**/${fileName}`).then(async (uris) => {
-        if (uris.length > 0) {
-          // Apply changes directly to the original file
-          await vscode.commands.executeCommand('http-file-updater.applyChanges', modifiedContent, uris[0]);
-        } else {
-          vscode.window.showErrorMessage(`Could not find ${fileName} to apply changes.`);
+      if (fileName.endsWith('.test.js') || fileName.endsWith('.spec.js')) {
+        // For test files, save to server/__tests__ folder
+        const workspaceFolders = vscode.workspace.workspaceFolders;
+        if (workspaceFolders) {
+          const rootPath = workspaceFolders[0].uri.fsPath;
+          const testFilePath = vscode.Uri.file(`${rootPath}/server/__tests__/${fileName}`);
+          
+          vscode.commands.executeCommand('http-file-updater.applyChanges', modifiedContent, testFilePath);
         }
-      });
+      } else {
+        // For non-test files, find the actual file in the workspace
+        vscode.workspace.findFiles(`**/${fileName}`).then(async (uris) => {
+          if (uris.length > 0) {
+            // Apply changes directly to the original file
+            await vscode.commands.executeCommand('http-file-updater.applyChanges', modifiedContent, uris[0]);
+          } else {
+            vscode.window.showErrorMessage(`Could not find ${fileName} to apply changes.`);
+          }
+        });
+      }
     } else if (selection === 'Discard') {
       // Close diff view
       vscode.commands.executeCommand('workbench.action.closeActiveEditor');
@@ -229,18 +268,22 @@ function sendActiveFileInfo(provider: ChatbotViewProvider) {
   const editor = vscode.window.activeTextEditor;
   if (editor) {
     const document = editor.document;
+    const filename = document.fileName.split(/[\/\\]/).pop() || '';
+    
     provider.updateContent({
       type: 'activeFileInfo',
-      filename: document.fileName.split(/[\/\\]/).pop() || '',
+      filename: filename,
       content: document.getText(),
-      language: document.languageId
+      language: document.languageId,
+      fullPath: document.fileName
     });
   } else {
     provider.updateContent({
       type: 'activeFileInfo',
       filename: '',
       content: '',
-      language: ''
+      language: '',
+      fullPath: ''
     });
   }
 }
