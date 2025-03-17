@@ -14,7 +14,61 @@
   ],
   "main": "./dist/extension.js",
   "contributes": {
+    "configuration": {
+      "title": "Documentation Generator",
+      "properties": {
+        "docGen.geminiApiKey": {
+          "type": "string",
+          "description": "API key for Gemini API"
+        },
+        "docGen.guidelinesPdfPath": {
+          "type": "string",
+          "description": "Path to the PDF file containing documentation guidelines"
+        },
+        "docGen.autoPromptForApiKey": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically prompt for API key if not set"
+        },
+        "docGen.temperature": {
+          "type": "number",
+          "default": 0.2,
+          "description": "Temperature setting for Gemini model (0.0 to 1.0)"
+        },
+        "docGen.maxTokens": {
+          "type": "number",
+          "default": 2048,
+          "description": "Maximum tokens for Gemini model response"
+        },
+        "docGen.maxDiffLength": {
+          "type": "number",
+          "default": 10000,
+          "description": "Maximum length of diff content to send to Gemini API"
+        },
+        "docGen.enablePdfGuidelines": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable using PDF guidelines for documentation generation"
+        }
+      }
+    },
     "commands": [
+      {
+        "command": "doc-gen.generateDocs",
+        "title": "Generate Documentation for Staged Files"
+      },
+      {
+        "command": "doc-gen.configureSettings",
+        "title": "Configure Documentation Generator Settings"
+      },
+      {
+        "command": "doc-gen.clearApiKey",
+        "title": "Clear Gemini API Key"
+      },
+      {
+        "command": "doc-gen.setGuidelinesPdf",
+        "title": "Set Guidelines PDF"
+      },
       {
         "command": "http-file-updater.showSidebar",
         "title": "Show HTTP File Updater Sidebar",
@@ -71,7 +125,10 @@
     "typescript": "^4.9.5"
   },
   "dependencies": {
+    "@bundled-es-modules/pdfjs-dist": "^3.6.172-alpha.1",
     "@google/generative-ai": "^0.24.0",
-    "axios": "^1.8.3"
+    "axios": "^1.8.3",
+    "pdfjs-dist": "^5.0.375",
+    "simple-git": "^3.27.0"
   }
 }
