@@ -38,7 +38,7 @@ const PostmanToSwaggerConverter: React.FC = () => {
       formData.append('file', file);
       
       // Make request to the backend with credentials
-      const response = await fetch('http://localhost:5000/convert', {
+      const response = await fetch('http://127.0.0.1:8001/convert', {
         method: 'POST',
         body: formData,
         credentials: 'include',

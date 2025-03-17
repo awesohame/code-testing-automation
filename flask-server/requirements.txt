@@ -6,3 +6,6 @@ supabase
 PyPDF2
 jina
 pypdf
+fastapi
+uvicorn
+python-multipart
