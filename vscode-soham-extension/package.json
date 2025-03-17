@@ -71,6 +71,7 @@
     "typescript": "^4.9.5"
   },
   "dependencies": {
-    "@google/generative-ai": "^0.24.0"
+    "@google/generative-ai": "^0.24.0",
+    "axios": "^1.8.3"
   }
 }

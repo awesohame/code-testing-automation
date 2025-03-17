@@ -25,8 +25,10 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.deactivate = exports.activate = void 0;
 const vscode = __importStar(require("vscode"));
+const path = __importStar(require("path"));
 const server_1 = require("./services/server");
 const webviewProvider_1 = require("./services/webviewProvider");
+const axios = require('axios');
 // This method is called when your extension is activated
 function activate(context) {
     console.log('Extension is now active!');
@@ -94,12 +96,26 @@ function activate(context) {
             }
         }
     });
-    // Listen for active editor changes to update file info
-    vscode.window.onDidChangeActiveTextEditor(editor => {
-        if (editor) {
-            sendActiveFileInfo(provider);
-        }
-    }, null, context.subscriptions);
+    // Command to generate test file
+    const generateTestFileCommand = vscode.commands.registerCommand('http-file-updater.generateTest', async (originalFilePath, fileName, content) => {
+        const baseFileName = path.basename(fileName);
+        const testFileName = baseFileName.replace(/\.(js|ts|jsx|tsx)$/, '.test.js');
+        // Prepare data for the server
+        const data = {
+            name: testFileName,
+            code: content,
+            originalFilePath: originalFilePath
+        };
+        // Send HTTP request to update file
+        axios.post('http://localhost:3000/update', data)
+            .then(() => {
+            vscode.window.showInformationMessage(`Test file created at server/__tests__/${testFileName}`);
+        })
+            .catch((err) => {
+            console.error('Error creating test file:', err);
+            vscode.window.showErrorMessage(`Failed to create test file: ${err.message}`);
+        });
+    });
     // Register the message handler for AI responses
     context.subscriptions.push(vscode.commands.registerCommand('http-file-updater.handleAIResponse', async (response, options) => {
         if (options.isEditMode) {
@@ -110,7 +126,7 @@ function activate(context) {
         }
     }));
     // Add to subscriptions to ensure proper disposal
-    context.subscriptions.push(view, showSidebarCommand, updateFileInfoCommand, showDiffCommand, applyChangesCommand);
+    context.subscriptions.push(view, showSidebarCommand, updateFileInfoCommand, showDiffCommand, applyChangesCommand, generateTestFileCommand);
     // Store reference to provider for messaging
     global.fileUpdateProvider = provider;
     // Initialize with current editor if one exists
@@ -133,16 +149,27 @@ function showDiffActionButtons(originalContent, modifiedContent, fileName) {
     // Create buttons in the editor title bar
     vscode.window.showInformationMessage(`Do you want to apply these changes to ${fileName}?`, 'Accept Changes', 'Discard').then(selection => {
         if (selection === 'Accept Changes') {
-            // Find the actual file in the workspace
-            vscode.workspace.findFiles(`**/${fileName}`).then(async (uris) => {
-                if (uris.length > 0) {
-                    // Apply changes directly to the original file
-                    await vscode.commands.executeCommand('http-file-updater.applyChanges', modifiedContent, uris[0]);
+            if (fileName.endsWith('.test.js') || fileName.endsWith('.spec.js')) {
+                // For test files, save to server/__tests__ folder
+                const workspaceFolders = vscode.workspace.workspaceFolders;
+                if (workspaceFolders) {
+                    const rootPath = workspaceFolders[0].uri.fsPath;
+                    const testFilePath = vscode.Uri.file(`${rootPath}/server/__tests__/${fileName}`);
+                    vscode.commands.executeCommand('http-file-updater.applyChanges', modifiedContent, testFilePath);
                 }
-                else {
-                    vscode.window.showErrorMessage(`Could not find ${fileName} to apply changes.`);
-                }
-            });
+            }
+            else {
+                // For non-test files, find the actual file in the workspace
+                vscode.workspace.findFiles(`**/${fileName}`).then(async (uris) => {
+                    if (uris.length > 0) {
+                        // Apply changes directly to the original file
+                        await vscode.commands.executeCommand('http-file-updater.applyChanges', modifiedContent, uris[0]);
+                    }
+                    else {
+                        vscode.window.showErrorMessage(`Could not find ${fileName} to apply changes.`);
+                    }
+                });
+            }
         }
         else if (selection === 'Discard') {
             // Close diff view
@@ -182,11 +209,13 @@ function sendActiveFileInfo(provider) {
     const editor = vscode.window.activeTextEditor;
     if (editor) {
         const document = editor.document;
+        const filename = document.fileName.split(/[\/\\]/).pop() || '';
         provider.updateContent({
             type: 'activeFileInfo',
-            filename: document.fileName.split(/[\/\\]/).pop() || '',
+            filename: filename,
             content: document.getText(),
-            language: document.languageId
+            language: document.languageId,
+            fullPath: document.fileName
         });
     }
     else {
@@ -194,7 +223,8 @@ function sendActiveFileInfo(provider) {
             type: 'activeFileInfo',
             filename: '',
             content: '',
-            language: ''
+            language: '',
+            fullPath: ''
         });
     }
 }

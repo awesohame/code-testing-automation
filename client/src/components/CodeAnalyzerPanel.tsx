@@ -164,10 +164,11 @@ const CodeAnalyzerPanel: React.FC<CodeAnalyzerPanelProps> = ({
       Return a structured response with:
       1. The programming language of the test
       2. Complete test code that covers all significant functions and edge cases
-      3. Detailed pointwise instructions on how to set up the testing environment, install necessary dependencies, and run the tests in a local environment
+      3. Short and brief stepwise instructions on how to install necessary dependencies.
       4. An analysis of test coverage including estimated percentage, covered functions, uncovered areas, and notes
       
       Make sure the test code:
+      - Has proper routing as it is going to be stored in the folder ./server/__tests__/ so mostly the imports will be "../file/path/from/root/"
       - Uses appropriate testing framework for the language
       - Includes proper mocking of external dependencies
       - Has clear descriptions of what each test verifies
@@ -262,43 +263,26 @@ const CodeAnalyzerPanel: React.FC<CodeAnalyzerPanelProps> = ({
             </div>
           ) : testResult ? (
             <div className="flex flex-col h-full">
-              <Tabs
-                defaultValue="test"
-                value={activeTab}
-                onValueChange={(value) => setActiveTab(value as any)}
-                className="w-full"
-              >
-                <div className="border-b border-blue-500/20">
-                  <TabsList className="bg-transparent h-auto p-0">
-                    <TabsTrigger
-                      value="test"
-                      className={cn(
-                        "rounded-none border-b-2 border-transparent px-4 py-2 data-[state=active]:border-blue-400 data-[state=active]:text-blue-400 data-[state=active]:shadow-none",
-                        "text-blue-100/80 hover:text-f8fafc"
-                      )}
+              <div className="border-b border-gray-800">
+                <div className="flex">
+                  {["test", "instructions", "coverage"].map((tab) => (
+                    <button
+                      key={tab}
+                      className={`px-4 py-2 text-sm ${activeTab === tab
+                          ? "text-green-400 border-b-2 border-green-400"
+                          : "text-gray-500 hover:text-gray-300"
+                        }`}
+                      onClick={() => setActiveTab(tab as any)}
                     >
-                      Test Code
-                    </TabsTrigger>
-                    <TabsTrigger
-                      value="instructions"
-                      className={cn(
-                        "rounded-none border-b-2 border-transparent px-4 py-2 data-[state=active]:border-blue-400 data-[state=active]:text-blue-400 data-[state=active]:shadow-none",
-                        "text-blue-100/80 hover:text-f8fafc"
-                      )}
-                    >
-                      Setup Instructions
-                    </TabsTrigger>
-                    <TabsTrigger
-                      value="coverage"
-                      className={cn(
-                        "rounded-none border-b-2 border-transparent px-4 py-2 data-[state=active]:border-blue-400 data-[state=active]:text-blue-400 data-[state=active]:shadow-none",
-                        "text-blue-100/80 hover:text-f8fafc"
-                      )}
-                    >
-                      Coverage Analysis
-                    </TabsTrigger>
-                  </TabsList>
+                      {tab === "test"
+                        ? "Test Code"
+                        : tab === "instructions"
+                          ? "Setup Instructions"
+                          : "Coverage Analysis"}
+                    </button>
+                  ))}
                 </div>
+              </div>
 
                 <ScrollArea className="flex-grow h-[calc(100vh-100px)] ">
                   <TabsContent value="test" className="m-0 p-4 w-fit">
