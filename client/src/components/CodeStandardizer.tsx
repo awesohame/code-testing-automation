@@ -676,7 +676,8 @@ const CodeStandardizer: React.FC = () => {
             // Handle file content
             let content = ""
             if ('content' in fileData && fileData.content) {
-              content = Buffer.from(fileData.content, 'base64').toString('utf-8')
+              // content = Buffer.from(fileData.content, 'base64').toString('utf-8')
+              content = atob(fileData.content)
             }
             
             return {
@@ -714,7 +715,7 @@ const CodeStandardizer: React.FC = () => {
       
       // Initialize the Gemini API with your API key
       const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY)
-      const model = genAI.getGenerativeModel({ model: "gemini-pro" })
+      const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" })
       
       // Create a structure with filenames and first 100 characters of content
       const fileStructure = files.map(file => ({
