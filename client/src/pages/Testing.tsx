@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
 import Editor from '@monaco-editor/react';
-import { Zap, Wand2, PlayCircle, Download } from 'lucide-react';
+import { Zap, Wand2, PlayCircle, Terminal } from 'lucide-react';
 import { StepIndicator } from '@/components/StepIndicator';
 import { FileExplorer } from '@/components/FileExplorer';
 import { APITable } from '@/components/APITable';
@@ -67,7 +67,7 @@ function parseK6Results(results: string): TestResult {
       // Extract endpoint path (this is approximated since actual path isn't in output)
       const pathHint = line.includes('data') ? '/data' :
         line.includes('users') ? '/users' :
-          line.includes('auth') ? '/auth' : '/';
+          line.includes('data') ? '/data' : '/';
 
       metrics.endpoints.push({
         method,
@@ -203,6 +203,32 @@ function parseK6Results(results: string): TestResult {
   };
 }
 
+// Terminal Modal Component
+const TerminalModal = ({ isOpen, onClose, terminalOutput }) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4">
+      <div className="bg-gray-900 border border-gray-700 rounded-lg w-full max-w-4xl max-h-[80vh] flex flex-col">
+        <div className="flex items-center justify-between p-3 border-b border-gray-700 bg-gray-800 rounded-t-lg">
+          <div className="flex items-center space-x-2">
+            <div className="h-3 w-3 rounded-full bg-red-500"></div>
+            <div className="h-3 w-3 rounded-full bg-yellow-500"></div>
+            <div className="h-3 w-3 rounded-full bg-green-500"></div>
+            <span className="text-gray-300 font-mono ml-2">Terminal Output</span>
+          </div>
+          <button onClick={onClose} className="text-gray-400 hover:text-white">
+            ✕
+          </button>
+        </div>
+        <div className="flex-1 p-4 overflow-auto bg-black font-mono text-sm">
+          <pre className="text-green-400 whitespace-pre-wrap">{terminalOutput}</pre>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 function App() {
   const [currentStep, setCurrentStep] = useState(0);
   const [selectedRepo, setSelectedRepo] = useState<Repository | null>(null);
@@ -222,6 +248,9 @@ function App() {
   const [structureError, setStructureError] = useState('');
   const [apiDetectionError, setApiDetectionError] = useState('');
   const [scriptGenerationError, setScriptGenerationError] = useState('');
+  // New state variables for terminal modal
+  const [isTerminalModalOpen, setIsTerminalModalOpen] = useState(false);
+  const [terminalOutput, setTerminalOutput] = useState('');
 
   const fetchRepoContents = async (
     owner: string,
@@ -378,8 +407,13 @@ function App() {
       if (!data.success) {
         throw new Error('Failed to run tests');
       }
+      console.log('Test results:', data.results);
+
+      // Save the raw terminal output for the modal
+      setTerminalOutput(data.results);
 
       const parsedResults = parseK6Results(data.results);
+      console.log('Test results:', parsedResults);
       setTestResults(parsedResults);
       setCurrentStep(3);
     } catch (error) {
@@ -476,11 +510,10 @@ function App() {
     setCurrentStep(1);
   };
 
-
   return (
     <div className="min-h-screen bg-gray-900 text-white p-8">
       {
-        currentStep !== 0 && (  
+        currentStep !== 0 && (
           <StepIndicator currentStep={currentStep} steps={STEPS} />
         )
       }
@@ -495,7 +528,7 @@ function App() {
           handleUsernameSubmit={handleUsernameSubmit}
           fetchRepos={fetchRepos}
           isLoading={isLoading}
-          error={error} 
+          error={error}
           searchQuery={searchQuery}
           setSearchQuery={setSearchQuery}
           filteredRepositories={filteredRepositories}
@@ -504,7 +537,6 @@ function App() {
           setSelectedRepo={setSelectedRepo}
         />
       )}
-
 
       {currentStep === 1 && (
         <PanelGroup direction="horizontal">
@@ -543,11 +575,20 @@ function App() {
 
               <APITable
                 endpoints={endpoints}
-                onUpdate={(endpoint) =>
-                  setEndpoints(endpoints.map((e) =>
-                    e.id === endpoint.id ? endpoint : e
-                  ))
-                }
+                onUpdate={(endpoint) => {
+                  // Check if this endpoint already exists in the array
+                  const existingIndex = endpoints.findIndex(e => e.id === endpoint.id);
+
+                  if (existingIndex >= 0) {
+                    // Update existing endpoint
+                    const updatedEndpoints = [...endpoints];
+                    updatedEndpoints[existingIndex] = endpoint;
+                    setEndpoints(updatedEndpoints);
+                  } else {
+                    // Add new endpoint
+                    setEndpoints([...endpoints, endpoint]);
+                  }
+                }}
                 onDelete={(id) =>
                   setEndpoints(endpoints.filter((e) => e.id !== id))
                 }
@@ -626,13 +667,20 @@ function App() {
             <h2 className="text-2xl font-semibold text-white">Test Results</h2>
             <button
               className="px-4 py-2 bg-blue-500 hover:bg-blue-600 rounded-lg flex items-center space-x-2 transition-colors"
-              onClick={() => {/* Export results logic */ }}
+              onClick={() => setIsTerminalModalOpen(true)}
             >
-              <Download className="w-4 h-4" />
-              <span>Export Results</span>
+              <Terminal className="w-4 h-4" />
+              <span>View Terminal Logs</span>
             </button>
           </div>
           <TestResults results={testResults} />
+
+          {/* Terminal Modal */}
+          <TerminalModal
+            isOpen={isTerminalModalOpen}
+            onClose={() => setIsTerminalModalOpen(false)}
+            terminalOutput={terminalOutput}
+          />
         </div>
       )}
     </div>

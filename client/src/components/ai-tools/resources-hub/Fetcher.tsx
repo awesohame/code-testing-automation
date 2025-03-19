@@ -3,18 +3,18 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { 
-  Search, 
-  BookOpen, 
-  Stars, 
-  GraduationCap, 
-  Sparkles,
-  Calculator,
-  Code,
-  Wrench,
-  ChevronRight,
-  MoveRight,
-  TestTube
+import {
+    Search,
+    BookOpen,
+    Stars,
+    GraduationCap,
+    Sparkles,
+    Calculator,
+    Code,
+    Wrench,
+    ChevronRight,
+    MoveRight,
+    TestTube
 } from "lucide-react";
 
 
@@ -138,7 +138,7 @@ function SubjectCategories({ onSearch }: { onSearch: (query: string) => void }) 
         {
             name: "Sciences",
             topics: ["Physics", "Chemistry", "Biology"],
-            icon: <TestTube className="w-6 h-6 text-white" />, 
+            icon: <TestTube className="w-6 h-6 text-white" />,
             gradient: "from-blue-600 to-blue-400",
         }
     ];

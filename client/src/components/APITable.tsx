@@ -37,6 +37,8 @@ export function APITable({ endpoints, onUpdate, onDelete }: APITableProps) {
       params: [],
       description: ''
     };
+
+    // Add the new endpoint directly
     onUpdate(newEndpoint);
     startEditing(newEndpoint);
   };
@@ -44,14 +46,16 @@ export function APITable({ endpoints, onUpdate, onDelete }: APITableProps) {
   const handleParamsChange = (value: string) => {
     if (!editForm) return;
 
-    const params: APIParameter[] = value.split(',').map(param => {
-      const trimmed = param.trim();
-      return {
-        key: trimmed,
-        required: false,
-        type: 'string'
-      };
-    });
+    const params: APIParameter[] = value.split(',')
+      .filter(param => param.trim() !== '')
+      .map(param => {
+        const trimmed = param.trim();
+        return {
+          key: trimmed,
+          required: false,
+          type: 'string'
+        };
+      });
 
     setEditForm({ ...editForm, params });
   };

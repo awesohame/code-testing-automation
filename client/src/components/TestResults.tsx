@@ -1,6 +1,4 @@
 import {
-  LineChart,
-  Line,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -8,16 +6,13 @@ import {
   ResponsiveContainer,
   BarChart,
   Bar,
-  Legend,
   RadarChart,
   PolarGrid,
   PolarAngleAxis,
   PolarRadiusAxis,
   Radar,
-  AreaChart,
-  Area
 } from 'recharts';
-import { Activity, Users, Zap, Clock, CheckCircle, BarChart2, AlertCircle } from 'lucide-react';
+import { Activity, Users, Zap, Clock, CheckCircle, AlertCircle } from 'lucide-react';
 import type { TestResult, NetworkMetrics } from '../types';
 
 interface TestResultsProps {
@@ -103,47 +98,54 @@ export function TestResults({ results }: TestResultsProps) {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-700">
-                {metrics.endpoints.map((endpoint, i) => (
-                  <tr key={i} className="bg-gray-800">
-                    <td className="px-6 py-4 text-sm font-medium">
-                      <span className={`px-2 py-1 rounded text-xs ${endpoint.method === 'GET' ? 'bg-blue-500/20 text-blue-400' :
+                {metrics.endpoints.map((endpoint, i) => {
+                  console.log(endpoint);
+                  return (
+                    <tr key={i} className="bg-gray-800">
+                      <td className="px-6 py-4 text-sm font-medium">
+                        <span className={`px-2 py-1 rounded text-xs ${endpoint.method === 'GET' ? 'bg-blue-500/20 text-blue-400' :
                           endpoint.method === 'POST' ? 'bg-green-500/20 text-green-400' :
                             endpoint.method === 'PUT' ? 'bg-yellow-500/20 text-yellow-400' :
                               endpoint.method === 'DELETE' ? 'bg-red-500/20 text-red-400' :
                                 'bg-purple-500/20 text-purple-400'
-                        }`}>
-                        {endpoint.method}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-300">{endpoint.path}</td>
-                    <td className="px-6 py-4 text-sm">
-                      <div className="flex items-center">
-                        {endpoint.success ? (
-                          <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
-                        ) : (
-                          <AlertCircle className="w-4 h-4 text-red-500 mr-2" />
-                        )}
-                        <span className={endpoint.success ? 'text-green-400' : 'text-red-400'}>
-                          {endpoint.success ? 'Success' : 'Failed'}
+                          }`}>
+                          {endpoint.method}
                         </span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-300">
-                      <div className="flex items-center">
-                        <div className="w-32 bg-gray-700 rounded-full h-2 mr-2">
-                          <div
-                            className={`h-2 rounded-full ${endpoint.successRate > 90 ? 'bg-green-500' :
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-300">{
+                        (
+                          endpoint.path === '/' ? '/user' : endpoint.path
+                        )
+                      }</td>
+                      <td className="px-6 py-4 text-sm">
+                        <div className="flex items-center">
+                          {endpoint.success ? (
+                            <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
+                          ) : (
+                            <AlertCircle className="w-4 h-4 text-red-500 mr-2" />
+                          )}
+                          <span className={endpoint.success ? 'text-green-400' : 'text-red-400'}>
+                            {endpoint.success ? 'Success' : 'Failed'}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-300">
+                        <div className="flex items-center">
+                          <div className="w-32 bg-gray-700 rounded-full h-2 mr-2">
+                            <div
+                              className={`h-2 rounded-full ${endpoint.successRate > 90 ? 'bg-green-500' :
                                 endpoint.successRate > 70 ? 'bg-yellow-500' :
                                   'bg-red-500'
-                              }`}
-                            style={{ width: `${endpoint.successRate}%` }}
-                          ></div>
+                                }`}
+                              style={{ width: `${endpoint.successRate}%` }}
+                            ></div>
+                          </div>
+                          <span>{endpoint.successRate}%</span>
                         </div>
-                        <span>{endpoint.successRate}%</span>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                      </td>
+                    </tr>
+                  )
+                })}
               </tbody>
             </table>
           </div>

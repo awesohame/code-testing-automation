@@ -5,6 +5,7 @@
   "main": "resource.js",
   "type": "module",
   "scripts": {
+    "dev": "nodemon resource.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

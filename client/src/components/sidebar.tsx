@@ -13,7 +13,7 @@ import {
   Globe2,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger,  } from "./ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger, } from "./ui/tooltip";
 
 // Helper function to replace Next.js's cn utility
 const cn = (...classes: any[]) => {
@@ -46,12 +46,12 @@ const routes = [
     href: "/code-culture",
     color: "text-blue-400",
   },
-  {
-    label: "Documentation",
-    icon: FileText,
-    href: "/documentation",
-    color: "text-pink-400",
-  },
+  // {
+  //   label: "Documentation",
+  //   icon: FileText,
+  //   href: "/documentation",
+  //   color: "text-pink-400",
+  // },
   {
     label: "AI Tools",
     icon: Brain,
@@ -162,7 +162,7 @@ export default function AppSidebar() {
                 <Tooltip key={route.href}>
                   <TooltipTrigger asChild>
                     <button
-                      
+
                       onClick={(e) => {
                         e.preventDefault();
                         handleNavigation(route.href);
