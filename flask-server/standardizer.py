@@ -74,6 +74,7 @@ def transform_code(component: str, standards: str) -> dict:
     Transformed Code:
     """
     response = structured_llm.invoke(prompt)
+    print("#####Response: ",response)
     json_res = response.model_dump_json(indent=4)
     print(json_res)  # Print structured JSON response
     return json_res
