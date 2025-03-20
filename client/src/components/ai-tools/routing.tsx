@@ -46,9 +46,8 @@ const AnimatedCodeBackground = ({ children }) => {
             }}
             animate={{
               y: "120%",
-              x: `calc(${Math.random() * 100}% + ${
-                (mousePosition.x / 50) * (i % 2 ? 1 : -1)
-              }px)`,
+              x: `calc(${Math.random() * 100}% + ${(mousePosition.x / 50) * (i % 2 ? 1 : -1)
+                }px)`,
               opacity: 0,
             }}
             transition={{
@@ -279,12 +278,12 @@ const AIToolsPage = () => {
               animate={{ opacity: 1 }}
               transition={{ delay: 0.4 }}
             >
-              <div className="inline-flex items-center px-3 py-1 bg-blue-500/10 backdrop-blur-sm rounded-full text-blue-400 text-xs font-mono border border-blue-500/30">
+              {/* <div className="inline-flex items-center px-3 py-1 bg-blue-500/10 backdrop-blur-sm rounded-full text-blue-400 text-xs font-mono border border-blue-500/30">
                 <span className="mr-2">$</span>
                 <span className="typing-effect">
                   npm install @ai-tools/core
                 </span>
-              </div>
+              </div> */}
             </motion.div>
           </motion.div>
 

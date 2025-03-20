@@ -413,7 +413,7 @@ function App() {
       setTerminalOutput(data.results);
 
       const parsedResults = parseK6Results(data.results);
-      console.log('Test results:', parsedResults);
+      console.log('parsed Test results:', parsedResults);
       setTestResults(parsedResults);
       setCurrentStep(3);
     } catch (error) {

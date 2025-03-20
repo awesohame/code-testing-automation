@@ -97,7 +97,7 @@ export default function CoursePage() {
   const [selected, setSelected] = useState({ unit: 1, chapter: 1, title: "" })
   const [ques, setques] = useState([])
   const [searchParams] = useSearchParams()
-  const title = searchParams.get("title") 
+  const title = searchParams.get("title")
   const data = searchParams.get("data")
   const [selectedTitle, setSelectedTitle] = useState("")
   const [dubbedVideo, setDubbedVideo] = useState("")
@@ -180,8 +180,7 @@ export default function CoursePage() {
 
     try {
       const response = await axios.get(
-        `https://www.googleapis.com/youtube/v3/search?key=${API_KEY}&q=${
-          title + " " + titleSelected.title
+        `https://www.googleapis.com/youtube/v3/search?key=${API_KEY}&q=${title + " " + titleSelected.title
         }&videoDuration=medium&videoEmbeddable=true&type=video&maxResults=5`,
       )
 
@@ -537,7 +536,7 @@ export default function CoursePage() {
               })}
             </Accordion>
 
-            <div className="w-full flex justify-center p-8">
+            {/* <div className="w-full flex justify-center p-8">
               {course.every((section: any) => section.subtopics.every((subtopic: any) => subtopic.completed)) ? (
                 <Button
                   onClick={() => handleCertify()}
@@ -551,7 +550,7 @@ export default function CoursePage() {
                   Complete the course first
                 </Button>
               )}
-            </div>
+            </div> */}
           </ScrollArea>
         </div>
       </div>

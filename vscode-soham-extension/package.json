@@ -128,6 +128,7 @@
     "@bundled-es-modules/pdfjs-dist": "^3.6.172-alpha.1",
     "@google/generative-ai": "^0.24.0",
     "axios": "^1.8.3",
+    "node-speech-to-text": "^1.0.0",
     "pdfjs-dist": "^5.0.375",
     "simple-git": "^3.27.0"
   }

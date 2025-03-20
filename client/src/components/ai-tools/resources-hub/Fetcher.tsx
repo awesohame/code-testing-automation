@@ -14,7 +14,12 @@ import {
     Wrench,
     ChevronRight,
     MoveRight,
-    TestTube
+    TestTube,
+    CheckCircle,
+    Gauge,
+    FileCode,
+    ShieldCheck,
+
 } from "lucide-react";
 
 
@@ -118,30 +123,31 @@ function SearchBar({ onSearch }: { onSearch: (query: string) => void }) {
 function SubjectCategories({ onSearch }: { onSearch: (query: string) => void }) {
     const subjects = [
         {
-            name: "Mathematics",
-            topics: ["Calculus", "Statistics", "Linear Algebra"],
-            icon: <Calculator className="w-6 h-6 text-white" />,
-            gradient: "from-blue-900 to-blue-700"
+            name: "Unit Testing",
+            topics: ["Jest", "Mocha", "JUnit"],
+            icon: <CheckCircle className="w-6 h-6 text-white" />,
+            gradient: "from-green-900 to-green-700"
         },
         {
-            name: "Computer Science",
-            topics: ["Programming", "Data Structures", "Algorithms"],
-            icon: <Code className="w-6 h-6 text-white" />,
-            gradient: "from-blue-800 to-blue-600"
+            name: "Performance Testing",
+            topics: ["Load Testing", "Stress Testing", "K6"],
+            icon: <Gauge className="w-6 h-6 text-white" />,
+            gradient: "from-red-800 to-red-600"
         },
         {
-            name: "Engineering",
-            topics: ["Mechanical", "Electrical", "Civil"],
-            icon: <Wrench className="w-6 h-6 text-white" />,
+            name: "Code Standards",
+            topics: ["Clean Code", "SOLID Principles", "Linting"],
+            icon: <FileCode className="w-6 h-6 text-white" />,
             gradient: "from-blue-700 to-blue-500"
         },
         {
-            name: "Sciences",
-            topics: ["Physics", "Chemistry", "Biology"],
-            icon: <TestTube className="w-6 h-6 text-white" />,
-            gradient: "from-blue-600 to-blue-400",
+            name: "Security Testing",
+            topics: ["Penetration Testing", "OWASP Top 10", "SAST/DAST"],
+            icon: <ShieldCheck className="w-6 h-6 text-white" />,
+            gradient: "from-purple-600 to-purple-400"
         }
     ];
+
 
     return (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">

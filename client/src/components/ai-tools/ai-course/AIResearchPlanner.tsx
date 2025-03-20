@@ -2,56 +2,18 @@
 
 import { useState, useEffect } from "react"
 import type React from "react"
-
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { GoogleGenerativeAI, SchemaType } from "@google/generative-ai"
-import { ChevronRight, Plus, Trash, Lightbulb, Heart, GraduationCap } from "lucide-react"
+import { ChevronRight, Plus, Trash, Lightbulb, Heart, GraduationCap, Sparkles, Code, Terminal } from "lucide-react"
 import { useUserData } from "@/hooks/useUserData"
-
-// Add custom scrollbar styles
-const scrollbarStyles = `
-  .scrollbar-thin::-webkit-scrollbar {
-    width: 6px;
-  }
-  .scrollbar-thin::-webkit-scrollbar-track {
-    background: var(--scrollbar-track, #0f172a);
-  }
-  .scrollbar-thin::-webkit-scrollbar-thumb {
-    background: var(--scrollbar-thumb, #3b82f6);
-    border-radius: 3px;
-  }
-  .scrollbar-blue::-webkit-scrollbar {
-    width: 6px;
-  }
-  .scrollbar-blue::-webkit-scrollbar-track {
-    background: #0f172a;
-  }
-  .scrollbar-blue::-webkit-scrollbar-thumb {
-    background: #3b82f6;
-    border-radius: 3px;
-  }
-  .scrollbar-normal::-webkit-scrollbar {
-    width: 8px;
-  }
-  .scrollbar-normal::-webkit-scrollbar-track {
-    background: #0f172a;
-  }
-  .scrollbar-normal::-webkit-scrollbar-thumb {
-    background: #334155;
-    border-radius: 3px;
-  }
-`
-
-// Optional: You can use framer-motion if you want the animations
-import { motion } from "framer-motion"
+import { motion, AnimatePresence } from "framer-motion"
 import { useNavigate } from "react-router-dom"
 
 const genAI = new GoogleGenerativeAI("AIzaSyDlcjeiBAXsMJ5d_Wnn5h-afC5X9bKmep8")
 
-// Define the schema for research outline
 const researchSchema = {
   type: SchemaType.ARRAY,
   items: {
@@ -98,7 +60,6 @@ const researchSchema = {
   },
 }
 
-// Define schema for recommended topics
 const recommendedTopicsSchema = {
   type: SchemaType.ARRAY,
   items: {
@@ -128,6 +89,37 @@ const recommendedTopicsSchema = {
   },
 }
 
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1
+    }
+  }
+}
+
+const itemVariants = {
+  hidden: { y: 20, opacity: 0 },
+  visible: {
+    y: 0,
+    opacity: 1,
+    transition: {
+      type: "spring",
+      stiffness: 100
+    }
+  }
+}
+
+const pulseAnimation = {
+  scale: [1, 1.02, 1],
+  transition: {
+    duration: 1.5,
+    repeat: Infinity,
+    ease: "easeInOut"
+  }
+}
+
 export default function AIResearchPlanner() {
   const { user } = useUserData()
   const navigate = useNavigate()
@@ -137,6 +129,8 @@ export default function AIResearchPlanner() {
   const [complexity, setComplexity] = useState(50)
   const [recommendedTopics, setRecommendedTopics] = useState([])
   const [isLoadingRecommendations, setIsLoadingRecommendations] = useState(false)
+  const [activeSection, setActiveSection] = useState<number | null>(null)
+  const [isGenerating, setIsGenerating] = useState(false)
 
   const addSection = () => {
     setInputFields([...inputFields, { value: "" }])
@@ -156,6 +150,7 @@ export default function AIResearchPlanner() {
 
   const handleGenerate = async () => {
     try {
+      setIsGenerating(true)
       const model = genAI.getGenerativeModel({
         model: "gemini-2.0-flash",
         generationConfig: {
@@ -170,11 +165,15 @@ export default function AIResearchPlanner() {
       const result = await model.generateContent(prompt)
       const responseGemini = result.response.text()
 
+      await new Promise(resolve => setTimeout(resolve, 800)) // Minimum animation time
+
       setGeneratedContent(responseGemini)
       console.log(responseGemini)
       navigate(`/ai-course/aivideo?title=${encodeURIComponent(title)}&data=${encodeURIComponent(responseGemini)}`)
     } catch (error) {
       console.error("Error generating research outline:", error)
+    } finally {
+      setIsGenerating(false)
     }
   }
 
@@ -186,7 +185,6 @@ export default function AIResearchPlanner() {
     setInputFields(newInputFields.length > 1 ? newInputFields : [...newInputFields, { value: "" }])
   }
 
-  // Function to get icon component based on icon type string
   const getIconComponent = (iconType: string) => {
     switch (iconType.toLowerCase()) {
       case "lightbulb":
@@ -199,7 +197,6 @@ export default function AIResearchPlanner() {
     }
   }
 
-  // Fetch personalized recommended topics focused on testing, system design and development
   const fetchPersonalizedTopics = async () => {
     if (!user) return
     if (!user.onboardingCompleted) return
@@ -231,7 +228,6 @@ export default function AIResearchPlanner() {
       const parsedResponse = JSON.parse(response)
 
       if (Array.isArray(parsedResponse) && parsedResponse.length > 0) {
-        // Transform the response to include the icon component
         const formattedTopics = parsedResponse.map((topic) => ({
           ...topic,
           icon: getIconComponent(topic.iconType),
@@ -247,148 +243,261 @@ export default function AIResearchPlanner() {
   }
 
   useEffect(() => {
-    // Inject custom scrollbar styles
-    const styleElement = document.createElement("style")
-    styleElement.textContent = scrollbarStyles
-    document.head.appendChild(styleElement)
-
-    return () => {
-      document.head.removeChild(styleElement)
-    }
-  }, [])
-
-  // Effect to fetch personalized recommendations when user data changes
-  useEffect(() => {
     if (user) {
       fetchPersonalizedTopics()
     }
   }, [user])
 
   return (
-    <div className="flex h-screen bg-[#0f172a] text-[#f8fafc] overflow-hidden font-sans">
+    <div className="flex h-screen bg-[#0a0f1a] text-[#f8fafc] overflow-hidden font-sans">
       {/* Left Section - Course Generator */}
-      <div className="w-2/3 h-full relative">
-        <div className="absolute inset-0 flex flex-col bg-gradient-to-b from-blue-900/10 via-transparent to-blue-900/5">
-          {/* Modified scrollbar for the middle section */}
-          <div id="left-scroll-container" className="flex-1 overflow-y-auto scrollbar-blue p-8">
-            <div className="max-w-2xl mx-auto">
-              <h1 className="text-5xl font-bold text-blue-400 mb-4 pt-10">AI Course Generator 🚀</h1>
-              <p className="text-xl text-blue-100/80 mb-8 font-light">
+      <motion.div
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        className="w-2/3 h-full relative"
+      >
+        <div className="absolute inset-0 flex flex-col bg-gradient-to-br from-blue-900/10 via-transparent to-purple-900/5">
+          <div className="flex-1 overflow-y-auto scrollbar-blue p-6">
+            <motion.div
+              variants={containerVariants}
+              initial="hidden"
+              animate="visible"
+              className="max-w-2xl mx-auto"
+            >
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="flex items-center gap-3 mb-3 pt-6"
+              >
+                <Code className="w-8 h-8 text-blue-400" />
+                <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+                  AI Course Generator
+                </h1>
+              </motion.div>
+
+              <motion.p
+                variants={itemVariants}
+                className="text-lg text-blue-100/80 mb-6 font-light"
+              >
                 Create personalized learning paths powered by AI. Specify your course focus and key topics to generate a
                 comprehensive curriculum.
-              </p>
+              </motion.p>
 
-              <Card className="bg-[#1a365d] rounded-3xl shadow-xl p-8 space-y-6 border border-blue-400/30 backdrop-filter backdrop-blur-lg">
-                <div>
-                  <Label htmlFor="title" className="text-2xl font-semibold text-cyan-300 mb-2 block">
-                    Course Title 📚
-                  </Label>
-                  <Input
-                    id="title"
-                    placeholder="Enter course title (e.g., 'Advanced System Testing')"
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                    className="rounded-xl text-xl py-6 bg-[#0f172a] placeholder-blue-100/60 text-[#f8fafc] border-cyan-500/40 focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400/30"
-                  />
-                </div>
+              <motion.div
+                variants={itemVariants}
+                whileHover={{ scale: 1.01 }}
+                transition={{ type: "spring", stiffness: 400 }}
+              >
+                <Card className="bg-gray-900/60 shadow-lg border border-blue-500/30 backdrop-filter backdrop-blur-lg relative overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-transparent to-purple-500/5" />
+                  <div className="p-6 space-y-4 relative">
+                    <motion.div variants={itemVariants}>
+                      <Label htmlFor="title" className="text-lg font-semibold text-blue-400 mb-2 block">
+                        Course Title
+                      </Label>
+                      <Input
+                        id="title"
+                        placeholder="Enter course title (e.g., 'Advanced System Testing')"
+                        value={title}
+                        onChange={(e) => setTitle(e.target.value)}
+                        className="text-base py-3 bg-[#0f172a]/80 placeholder-blue-100/60 text-[#f8fafc] border-blue-500/40 
+                          focus:border-blue-400 focus:ring-2 focus:ring-blue-400/30 transition-all duration-300"
+                      />
+                    </motion.div>
 
-                {inputFields.map((field, index) => (
-                  <div key={index}>
-                    <Label htmlFor={`section-${index}`} className="text-2xl font-semibold text-cyan-300 mb-2 block">
-                      {`Topic ${index + 1} 🔍`}
-                    </Label>
-                    <Input
-                      id={`section-${index}`}
-                      placeholder="Enter a key topic to cover"
-                      value={field.value}
-                      onChange={(event) => handleInputChange(index, event)}
-                      className="rounded-xl text-xl py-6 bg-[#0f172a] placeholder-blue-100/60 text-[#f8fafc] border-cyan-500/40 focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400/30"
-                    />
-                  </div>
-                ))}
+                    <AnimatePresence>
+                      {inputFields.map((field, index) => (
+                        <motion.div
+                          key={index}
+                          variants={itemVariants}
+                          initial="hidden"
+                          animate="visible"
+                          exit={{ opacity: 0, y: -20 }}
+                          className="space-y-2"
+                          onFocus={() => setActiveSection(index)}
+                          onBlur={() => setActiveSection(null)}
+                        >
+                          <Label
+                            htmlFor={`section-${index}`}
+                            className="text-lg font-semibold text-blue-400 mb-2 block flex items-center gap-2"
+                          >
+                            <Terminal className="w-4 h-4" />
+                            {`Topic ${index + 1}`}
+                          </Label>
+                          <div className="relative">
+                            <Input
+                              id={`section-${index}`}
+                              placeholder="Enter a key topic to cover"
+                              value={field.value}
+                              onChange={(event) => handleInputChange(index, event)}
+                              className={`text-base py-3 bg-[#0f172a]/80 placeholder-blue-100/60 text-[#f8fafc] 
+                                border-blue-500/40 focus:border-blue-400 focus:ring-2 focus:ring-blue-400/30 
+                                transition-all duration-300 ${activeSection === index ? 'shadow-lg shadow-blue-500/20' : ''}`}
+                            />
+                            {activeSection === index && (
+                              <motion.div
+                                className="absolute inset-0 border-2 border-blue-400/20 rounded-lg pointer-events-none"
+                                animate={pulseAnimation}
+                              />
+                            )}
+                          </div>
+                        </motion.div>
+                      ))}
+                    </AnimatePresence>
 
-                <div className="flex gap-4 pt-4">
-                  <Button
-                    onClick={addSection}
-                    className="flex-1 rounded-xl py-6 text-xl bg-emerald-800/80 hover:bg-emerald-700/80 transition-all text-[#f8fafc] border border-emerald-500/40 shadow-inner shadow-emerald-500/5"
-                  >
-                    <Plus className="w-5 h-5 mr-2" />
-                    Add Topic
-                  </Button>
-                  <Button
-                    onClick={deleteSection}
-                    className="flex-1 rounded-xl py-6 text-xl bg-rose-800/80 hover:bg-rose-700/80 transition-all text-[#f8fafc] border border-rose-500/40 shadow-inner shadow-rose-500/5"
-                  >
-                    <Trash className="w-5 h-5 mr-2" />
-                    Remove Topic
-                  </Button>
-                </div>
-
-                <Button
-                  onClick={handleGenerate}
-                  className="w-full rounded-xl py-6 text-2xl bg-gradient-to-r from-cyan-600 to-blue-700 hover:from-cyan-500 hover:to-blue-600 transition-all text-[#f8fafc] font-bold shadow-lg border-none"
-                >
-                  Generate Course Content ✨
-                </Button>
-              </Card>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Right Section - Recommended Topics (focused on testing/system design) */}
-      <div className="w-1/3 h-full relative">
-        <div className="absolute inset-0 flex flex-col">
-          <div className="flex justify-between items-center px-8 py-4 border-b border-blue-500/30 bg-[#0f172a] shadow-md">
-            <h2 className="text-2xl font-bold text-cyan-400">
-              {user ? "Testing & Development Topics" : "Testing & Development Topics"}
-            </h2>
-          </div>
-          <div
-            id="right-scroll-container"
-            className="flex-1 overflow-y-auto scrollbar-normal p-8 border-l border-blue-500/20 bg-gradient-to-b from-gray-900/90 via-gray-900/60 to-transparent"
-          >
-            <div className="space-y-6">
-              {isLoadingRecommendations ? (
-                <div className="flex justify-center items-center h-32">
-                  <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-cyan-500"></div>
-                </div>
-              ) : (
-                recommendedTopics.map((topic, index) => (
-                  <motion.div
-                    key={index}
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.3, delay: index * 0.1 }}
-                  >
-                    <Card
-                      className="rounded-xl gap-0 py-0 hover:shadow-cyan-500/10 hover:shadow-xl transition-all duration-300 cursor-pointer bg-[#164e68] border border-cyan-500/40"
-                      onClick={() => handleCardClick(topic)}
+                    <motion.div
+                      variants={itemVariants}
+                      className="flex gap-3 pt-3"
                     >
-                      <CardHeader className="bg-gradient-to-r from-cyan-950 to-blue-950 rounded-t-xl p-4">
-                        <CardTitle className="text-2xl font-bold text-[#f8fafc] flex items-center">
-                          <span className="">{topic.title}</span>
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent className="p-6 bg-gradient-to-b from-cyan-900 to-cyan-950">
-                        <ul className="space-y-2">
-                          {topic.subtopics.map((t, i) => (
-                            <li key={i} className="flex items-center text-white text-lg">
-                              <ChevronRight className="w-4 h-4 mr-2 text-white" />
-                              {t}
-                            </li>
-                          ))}
-                        </ul>
-                      </CardContent>
-                    </Card>
-                  </motion.div>
-                ))
-              )}
-            </div>
+                      <Button
+                        onClick={addSection}
+                        className="flex-1 py-2 text-sm bg-blue-500/10 hover:bg-blue-500/20 transition-all text-[#f8fafc] 
+                          border border-blue-500/40 hover:border-blue-400 group"
+                      >
+                        <Plus className="w-4 h-4 mr-2 group-hover:rotate-180 transition-transform duration-300" />
+                        Add Topic
+                      </Button>
+                      <Button
+                        onClick={deleteSection}
+                        className="flex-1 py-2 text-sm bg-red-500/10 hover:bg-red-500/20 transition-all text-[#f8fafc] 
+                          border border-red-500/40 hover:border-red-400 group"
+                      >
+                        <Trash className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform duration-300" />
+                        Remove Topic
+                      </Button>
+                    </motion.div>
+
+                    <motion.div variants={itemVariants}>
+                      <Button
+                        onClick={handleGenerate}
+                        disabled={isGenerating}
+                        className="w-full py-3 text-base bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 
+                          hover:to-purple-500 transition-all text-[#f8fafc] font-medium relative overflow-hidden group"
+                      >
+                        {isGenerating ? (
+                          <motion.div
+                            className="flex items-center gap-2"
+                            animate={{ opacity: [1, 0.5, 1] }}
+                            transition={{ duration: 1.5, repeat: Infinity }}
+                          >
+                            <Sparkles className="w-5 h-5" />
+                            Generating...
+                          </motion.div>
+                        ) : (
+                          <span className="flex items-center gap-2">
+                            <Code className="w-5 h-5 group-hover:rotate-12 transition-transform duration-300" />
+                            Generate Course Content
+                          </span>
+                        )}
+                        <motion.div
+                          className="absolute inset-0 bg-gradient-to-r from-blue-400/20 to-purple-400/20"
+                          initial={{ x: '-100%' }}
+                          animate={isGenerating ? { x: '100%' } : { x: '-100%' }}
+                          transition={{ duration: 1.5, repeat: Infinity }}
+                        />
+                      </Button>
+                    </motion.div>
+                  </div>
+                </Card>
+              </motion.div>
+            </motion.div>
           </div>
         </div>
-      </div>
+      </motion.div>
+
+      {/* Right Section - Recommended Topics */}
+      <motion.div
+        initial={{ opacity: 0, x: 20 }}
+        animate={{ opacity: 1, x: 0 }}
+        className="w-1/3 h-full relative"
+      >
+        <div className="absolute inset-0 flex flex-col">
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex justify-between items-center px-8 py-4 border-b border-cyan-500/30 bg-[#0a0f1a] shadow-lg"
+          >
+            <h2 className="text-2xl font-bold bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent flex items-center gap-2">
+              <Terminal className="w-6 h-6 text-cyan-400" />
+              Developer Topics
+            </h2>
+          </motion.div>
+
+          <div className="flex-1 overflow-y-auto scrollbar-normal p-8 border-l border-cyan-500/20 
+            bg-gradient-to-b from-gray-900/90 via-gray-900/60 to-transparent">
+            <AnimatePresence>
+              {isLoadingRecommendations ? (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="flex justify-center items-center h-32"
+                >
+                  <motion.div
+                    className="w-12 h-12 border-2 border-cyan-500 rounded-full border-t-transparent"
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                  />
+                </motion.div>
+              ) : (
+                <motion.div
+                  variants={containerVariants}
+                  initial="hidden"
+                  animate="visible"
+                  className="space-y-6"
+                >
+                  {recommendedTopics.map((topic, index) => (
+                    <motion.div
+                      key={index}
+                      variants={itemVariants}
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      transition={{ type: "spring", stiffness: 400 }}
+                    >
+                      <Card
+                        onClick={() => handleCardClick(topic)}
+                        className="rounded-xl overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer 
+                          bg-gradient-to-br from-[#0f2d4a] to-[#1a1f3c] border border-cyan-500/40 relative group"
+                      >
+                        <motion.div
+                          className="absolute inset-0 bg-gradient-to-r from-cyan-500/10 to-purple-500/10 opacity-0 group-hover:opacity-100"
+                          transition={{ duration: 0.3 }}
+                        />
+
+                        <CardHeader className="bg-gradient-to-r from-cyan-950 to-blue-950 p-4 relative">
+                          <CardTitle className="text-2xl font-bold text-[#f8fafc] flex items-center gap-3">
+                            {topic.icon}
+                            <span className="bg-gradient-to-r from-cyan-300 to-blue-300 bg-clip-text text-transparent">
+                              {topic.title}
+                            </span>
+                          </CardTitle>
+                        </CardHeader>
+
+                        <CardContent className="p-6 bg-gradient-to-b from-cyan-900/20 to-cyan-950/20">
+                          <ul className="space-y-3">
+                            {topic.subtopics.map((t, i) => (
+                              <motion.li
+                                key={i}
+                                initial={{ opacity: 0, x: -20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: i * 0.1 }}
+                                className="flex items-center text-white/90 text-lg group/item"
+                              >
+                                <ChevronRight className="w-4 h-4 mr-2 text-cyan-400 group-hover/item:translate-x-1 transition-transform" />
+                                {t}
+                              </motion.li>
+                            ))}
+                          </ul>
+                        </CardContent>
+                      </Card>
+                    </motion.div>
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        </div>
+      </motion.div>
     </div>
   )
 }
-
