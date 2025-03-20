@@ -20,6 +20,7 @@ import SignUpPage from "./pages/SignUp";
 import OnboardingForm from "./pages/Onboarding";
 import RepoSelectionPage from "./pages/RepoSelectingPage";
 import Manager from "./components/Manager";
+import Leaderboards from "./components/Leaderboards";
 
 const App: React.FC = () => {
   const handleRepoSubmit = (owner: string, name: string) => {
@@ -50,6 +51,7 @@ const App: React.FC = () => {
         <Route path="/researcher" element={<Researcher />} />
         <Route path="/resources" element={<ResourceHub />} />\
         <Route path="/manager-view" element={<Manager />} />
+        <Route path="/leaderboards" element={<Leaderboards />} />
       </Route>
     </Routes>
   );

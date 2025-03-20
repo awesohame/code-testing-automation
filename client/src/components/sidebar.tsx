@@ -60,9 +60,9 @@ const routes = [
     color: "text-blue-400",
   },
   {
-    label: "Leaderboard",
+    label: "Leaderboards",
     icon: BarChart3,
-    href: "/leaderboard",
+    href: "/leaderboards",
     color: "text-blue-400",
   },
   {
