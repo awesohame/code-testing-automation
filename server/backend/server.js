@@ -46,16 +46,18 @@ const extractApiRoutes = require("./routes/extractApiRoutes");
 const testScriptRoutes = require("./routes/testScriptRoutes");
 const webhookRoutes = require('./routes/webhookRoutes');
 const userRoutes = require('./routes/userRoutes');
-const loadTestRouter=require('./routes/loadTestRoutes.js')
-const testGenerationRoutes=require('./routes/testGenerationRoutes.js')
+const loadTestRouter = require('./routes/loadTestRoutes.js')
+const testGenerationRoutes = require('./routes/testGenerationRoutes.js')
+const managerRoutes = require('./routes/managerRoutes.js');
 
 app.use('/api/webhooks', webhookRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/loadtests', loadTestRouter);
-app.use('/api/test-generations',testGenerationRoutes);
+app.use('/api/test-generations', testGenerationRoutes);
 app.use("/api", testRoutes);
 app.use("/api/extract-api", extractApiRoutes);
 app.use("/api", testScriptRoutes);
+app.use("/api/manager", managerRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {

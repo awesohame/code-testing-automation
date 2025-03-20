@@ -19,6 +19,7 @@ import SignInPage from "./pages/SignIn";
 import SignUpPage from "./pages/SignUp";
 import OnboardingForm from "./pages/Onboarding";
 import RepoSelectionPage from "./pages/RepoSelectingPage";
+import Manager from "./components/Manager";
 
 const App: React.FC = () => {
   const handleRepoSubmit = (owner: string, name: string) => {
@@ -47,7 +48,8 @@ const App: React.FC = () => {
         <Route path="/ai-course" element={<AiCourse />} />
         <Route path="/ai-course/aivideo" element={<AiVideo />} />
         <Route path="/researcher" element={<Researcher />} />
-        <Route path="/resources" element={<ResourceHub />} />
+        <Route path="/resources" element={<ResourceHub />} />\
+        <Route path="/manager-view" element={<Manager />} />
       </Route>
     </Routes>
   );
