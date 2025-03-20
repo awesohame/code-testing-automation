@@ -23,7 +23,10 @@ const RepoViewerPage: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true)
   const [error, setError] = useState<string>("")
   const [expandedFolders, setExpandedFolders] = useState<Record<string, boolean>>({})
-
+  const repoInfo={
+    owner:repoOwner,
+    name:repoName,
+  }
   // Token should be stored securely in environment variables
   const token = import.meta.env.VITE_GITHUB_TOKEN
 
@@ -295,7 +298,7 @@ const RepoViewerPage: React.FC = () => {
       {/* Right Panel - Code Analyzer */}
       <TooltipProvider>
         <div className="bg-gray-900/60 backdrop-blur-sm border-blue-500/20">
-          <CodeAnalyzerPanel selectedFile={selectedFile} fileContent={fileContent} />
+          <CodeAnalyzerPanel selectedFile={selectedFile} fileContent={fileContent} repoInfo={repoInfo} />
         </div>
       </TooltipProvider>
     </div>

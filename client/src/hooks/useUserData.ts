@@ -1,6 +1,6 @@
 // src/hooks/useUserData.ts
 import { useEffect } from 'react';
-import { useUserContext } from '@/context/userContext';
+import { useUserContext } from '@/context/UserContext';
 import { useAuth } from '@clerk/clerk-react';
 
 export const useUserData = () => {

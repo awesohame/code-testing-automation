@@ -37,16 +37,22 @@ app.get('/api/search', async (req, res) => {
 });
 
 // Connect to DB before setting up routes
-// connectDB().then(() => {
+connectDB().then(() => {
+  console.log("Database Connected");
+})
 // Only set up routes after DB connection is established
 const testRoutes = require("./routes/testRoutes");
 const extractApiRoutes = require("./routes/extractApiRoutes");
 const testScriptRoutes = require("./routes/testScriptRoutes");
 const webhookRoutes = require('./routes/webhookRoutes');
 const userRoutes = require('./routes/userRoutes');
+const loadTestRouter=require('./routes/loadTestRoutes.js')
+const testGenerationRoutes=require('./routes/testGenerationRoutes.js')
 
 app.use('/api/webhooks', webhookRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/loadtests', loadTestRouter);
+app.use('/api/test-generations',testGenerationRoutes);
 app.use("/api", testRoutes);
 app.use("/api/extract-api", extractApiRoutes);
 app.use("/api", testScriptRoutes);

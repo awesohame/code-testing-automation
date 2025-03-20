@@ -22,24 +22,12 @@ import {
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import ReactMarkdown from "react-markdown";
+import { useUser } from "@clerk/clerk-react";
+import { useUserData } from "@/hooks/useUserData";
 
 interface CodeAnalyzerPanelProps {
   selectedFile: GitHubContentItem | null;
   fileContent: string;
-}
-
-// Define the schema for the structured output
-interface TestGenerationResult {
-  language: string;
-  testCode: string;
-  instructions: string;
-  newFile: string;
-  coverage: {
-    percentage: number;
-    coveredFunctions: string[];
-    uncoveredAreas: string[];
-    notes: string;
-  };
 }
 
 const schema = {
@@ -99,15 +87,16 @@ const schema = {
 const CodeAnalyzerPanel: React.FC<CodeAnalyzerPanelProps> = ({
   selectedFile,
   fileContent,
+  repoInfo
 }) => {
-  const [testResult, setTestResult] = useState<TestGenerationResult | null>(
-    null
-  );
-  const [isGenerating, setIsGenerating] = useState<boolean>(false);
-  const [error, setError] = useState<string>("");
-  const [activeTab, setActiveTab] = useState<
-    "test" | "instructions" | "coverage"
-  >("test");
+
+  const { user } = useUserData()
+  const userId=user?.clerkId
+  const [testResult, setTestResult] = useState(null);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [error, setError] = useState("");
+  const [activeTab, setActiveTab] = useState("test");
 
   // Initialize the Google Generative AI client
   // API key should be stored in environment variables in production
@@ -181,6 +170,7 @@ const CodeAnalyzerPanel: React.FC<CodeAnalyzerPanelProps> = ({
       console.log(jsonResponse);
 
       setTestResult(jsonResponse);
+      console.log(testResult)
     } catch (err: any) {
       console.error("Failed to generate test:", err);
       setError(`Failed to generate test: ${err.message || "Unknown error"}`);
@@ -190,40 +180,105 @@ const CodeAnalyzerPanel: React.FC<CodeAnalyzerPanelProps> = ({
   };
 
   const handleSyncWithExtension = async () => {
-    if (!testResult) return;
     console.log(testResult);
-
-    const newFileName = selectedFile?.path
-      .split("/")
-      .slice(0, -1)
-      .concat([testResult.newFile])
-      .join("/");
-
-    const returns = {
-      name: newFileName,
-      code: testResult?.testCode,
-      previousFileName: selectedFile?.path,
-    };
-
-    console.log(returns);
-
+    console.log(selectedFile)
+    console.log(userId)
+    if (!testResult || !selectedFile || !userId) return;
+    
+    setIsSyncing(true);
+    
     try {
-      const response = await axios.post(
+      // Prepare file names
+      const newFileName = selectedFile?.path
+        .split("/")
+        .slice(0, -1)
+        .concat([testResult.newFile])
+        .join("/");
+      
+      const sourceFileName = selectedFile.name;
+      const testFileName = testResult.newFile;
+      
+      // Create the payload for the API
+      const testGenerationData = {
+        // User information from Clerk
+        userId,
+        userEmail: user?.primaryEmailAddress?.emailAddress,
+        
+        // Repository information if available
+        repoName: repoInfo?.name || "",
+        repoOwner: repoInfo?.owner || "",
+        
+        // Source file information
+        sourceFilePath: selectedFile.path,
+        sourceFileName,
+        sourceFileLanguage: testResult.language,
+        
+        // Test file information
+        testFilePath: newFileName,
+        testFileName,
+        testCode: testResult.testCode,
+        generatedAt: new Date().toISOString(),
+        
+        // Test coverage metrics
+        coveragePercentage: testResult.coverage.percentage,
+        coveredFunctions: testResult.coverage.coveredFunctions,
+        uncoveredAreas: testResult.coverage.uncoveredAreas,
+        coverageNotes: testResult.coverage.notes,
+        
+        // Additional metadata
+        testInstructions: testResult.instructions,
+        modelUsed: "gemini-2.0-flash",
+        syncedAt: new Date().toISOString(),
+      };
+      
+      // First, store the test generation data in MongoDB via our Express API
+      const dbResponse = await axios.post(
+        "http://localhost:5000/api/test-generations",
+        testGenerationData,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            // Clerk will attach the auth token automatically when using their SDK
+          },
+        }
+      );
+      
+      // Then, sync with the editor extension
+      const extensionPayload = {
+        name: newFileName,
+        code: testResult.testCode,
+        previousFileName: selectedFile.path,
+      };
+      
+      const extensionResponse = await axios.post(
         "http://localhost:3000/update",
-        returns,
+        extensionPayload,
         {
           headers: {
             "Content-Type": "application/json",
           },
         }
       );
-
-      console.log("Response:", response.data);
+      
+      toast({
+        title: "Test synced successfully",
+        description: `Test file created at ${newFileName} and saved to your history`,
+        variant: "default",
+      });
+      
+      console.log("DB Response:", dbResponse.data);
+      console.log("Extension Response:", extensionResponse.data);
     } catch (error) {
-      console.error("Error syncing with extension:", error);
+      console.error("Error syncing with extension or saving to DB:", error);
+      toast({
+        title: "Sync failed",
+        description: "Could not sync test with editor or save to database",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSyncing(false);
     }
   };
-
   return (
     <aside className="h-full w-[500px] bg-gray-900/60 backdrop-blur-sm shadow-xl overflow-hidden border-l border-blue-500/20 flex flex-col">
       <div className="sticky top-0 bg-gray-900/90 p-4 border-b border-blue-500/20 z-10">
