@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger, } from "./ui/tooltip";
+import { SignOutButton } from "@clerk/clerk-react";
 
 // Helper function to replace Next.js's cn utility
 const cn = (...classes: any[]) => {
@@ -28,12 +29,12 @@ const routes = [
     href: "/dashboard",
     color: "text-blue-400",
   },
-  {
-    label: "Test Cases",
-    icon: ShieldCheck,
-    href: "/test-cases",
-    color: "text-blue-400",
-  },
+  // {
+  //   label: "Test Cases",
+  //   icon: ShieldCheck,
+  //   href: "/test-cases",
+  //   color: "text-blue-400",
+  // },
   {
     label: "Testing Suite",
     icon: TestTube,
@@ -263,6 +264,7 @@ export default function AppSidebar() {
             >
               Log out
             </TooltipContent>
+            <SignOutButton />
           </Tooltip>
         </div>
       </div>

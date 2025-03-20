@@ -10,9 +10,12 @@ const LoadTestSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  githubUsername: {
+    type: String,
+
+  },
   timestamp: {
     type: Date,
-    required: true,
     default: Date.now
   },
   metrics: {
