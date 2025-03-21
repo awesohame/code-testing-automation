@@ -135,7 +135,7 @@ export default function AppSidebar() {
         >
           {!isCollapsed && (
             <span className="text-3xl font-black text-blue-100 bg-gradient-to-r from-blue-300 to-blue-400 bg-clip-text text-transparent transition-all duration-300">
-              TestForge
+              Codeवेद
             </span>
           )}
         </div>

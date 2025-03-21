@@ -4,6 +4,8 @@ import { BrowserRouter } from "react-router-dom";
 import App from "./App";
 import { ClerkProvider } from '@clerk/clerk-react'
 import { UserProvider } from '@/context/UserContext';
+import { VoiceNavigationDockComponent } from "./components/voice-navigation-dock";
+import AccessibilityMenuWrapper from "./components/Accessibility/AccessibiltyWrapper";
 
 // console.log(import.meta.env); 
 // console.log(import.meta.env.VITE_CLERK_PUBLISHABLE_KEY);
@@ -21,7 +23,12 @@ root.render(
   <BrowserRouter>
     <ClerkProvider publishableKey={PUBLISHABLE_KEY} afterSignOutUrl="/">
       <UserProvider>
-        <App />
+        <AccessibilityMenuWrapper>
+
+          <VoiceNavigationDockComponent />
+
+          <App />
+        </AccessibilityMenuWrapper>
       </UserProvider>
     </ClerkProvider>
   </BrowserRouter>

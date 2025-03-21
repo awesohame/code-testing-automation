@@ -27,7 +27,7 @@ import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { Progress } from "@/components/ui/progress" 
+import { Progress } from "@/components/ui/progress"
 import { cn } from "@/lib/utils"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -73,7 +73,7 @@ const detectLanguage = (codeString: string, filePath: string = ""): string => {
       }
     }
   }
-  
+
   // Fallback to content-based detection
   if (codeString.includes("def ") || codeString.includes("import ") || codeString.includes("print(")) {
     return "python"
@@ -95,11 +95,11 @@ const GithubRepoInput: React.FC<{
   isLoading: boolean
 }> = ({ repoOwner, setRepoOwner, repoName, setRepoName, fetchRepoFiles, isLoading }) => {
   return (
-    <Card className="bg-gray-900/60 backdrop-blur-sm border-blue-500/20 shadow-xl mb-6">
+    <Card className="bg-gray-900/60 backdrop-blur-sm border-blue-500/20 shadow-lg mb-6">
       <CardHeader className="pb-4">
         <div className="flex items-center gap-2">
           <Github className="h-5 w-5 text-blue-400" />
-          <CardTitle>GitHub Repository</CardTitle>
+          <CardTitle className="text-lg font-medium">GitHub Repository</CardTitle>
         </div>
         <CardDescription className="text-blue-100/60">
           Connect to a GitHub repository to analyze and standardize its code
@@ -111,20 +111,20 @@ const GithubRepoInput: React.FC<{
             <Label htmlFor="repoOwner">Repository Owner</Label>
             <Input
               id="repoOwner"
-              value={repoOwner}
+              value={repoOwner || "anish3333"}
               onChange={(e) => setRepoOwner(e.target.value)}
               placeholder="e.g., facebook"
-              className="bg-[#0f172a] border-blue-500/20 text-blue-100/80 focus-visible:ring-blue-400"
+              className="bg-[#0f172a] border-blue-500/20 text-blue-100/80 focus-visible:ring-blue-400 rounded-sm"
             />
           </div>
           <div className="space-y-2">
             <Label htmlFor="repoName">Repository Name</Label>
             <Input
               id="repoName"
-              value={repoName}
+              value={repoName || "11labs-twilio"}
               onChange={(e) => setRepoName(e.target.value)}
               placeholder="e.g., react"
-              className="bg-[#0f172a] border-blue-500/20 text-blue-100/80 focus-visible:ring-blue-400"
+              className="bg-[#0f172a] border-blue-500/20 text-blue-100/80 focus-visible:ring-blue-400 rounded-sm"
             />
           </div>
         </div>
@@ -132,8 +132,8 @@ const GithubRepoInput: React.FC<{
       <CardFooter className="border-t border-blue-500/20 pt-4">
         <Button
           onClick={fetchRepoFiles}
-          disabled={isLoading || !repoOwner || !repoName}
-          className="bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 hover:text-blue-300 ml-auto"
+          disabled={isLoading}
+          className="bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 hover:text-blue-300 ml-auto rounded-sm"
         >
           {isLoading ? (
             <>
@@ -163,11 +163,11 @@ const CodeInputForm: React.FC<{
   language: string
 }> = ({ code, setCode, handleSubmit, handleReset, isLoading, error, language }) => {
   return (
-    <Card className="bg-gray-900/60 backdrop-blur-sm border-blue-500/20 shadow-xl">
+    <Card className="bg-gray-900/60 backdrop-blur-sm border-blue-500/20 shadow-lg">
       <CardHeader className="pb-4">
         <div className="flex items-center gap-2">
           <Code className="h-5 w-5 text-blue-400" />
-          <CardTitle>Your Code</CardTitle>
+          <CardTitle className="text-lg font-medium">Your Code</CardTitle>
         </div>
         <CardDescription className="text-blue-100/60">
           Edit your code below or paste code to standardize according to company guidelines
@@ -175,7 +175,7 @@ const CodeInputForm: React.FC<{
       </CardHeader>
       <form onSubmit={handleSubmit}>
         <CardContent>
-          <div className="relative border border-blue-500/20 rounded-md overflow-hidden">
+          <div className="relative border border-blue-500/20 rounded-none overflow-hidden">
             <Editor
               height="300px"
               language={language || "javascript"}
@@ -193,7 +193,7 @@ const CodeInputForm: React.FC<{
           </div>
 
           {error && (
-            <Alert variant="destructive" className="mt-4 bg-red-500/10 border-red-500/30 text-red-400">
+            <Alert variant="destructive" className="mt-4 bg-red-500/10 border-red-500/30 text-red-400 rounded-none">
               <AlertTriangle className="h-4 w-4" />
               <AlertTitle>Error</AlertTitle>
               <AlertDescription>{error}</AlertDescription>
@@ -205,7 +205,7 @@ const CodeInputForm: React.FC<{
             type="button"
             onClick={handleReset}
             variant="outline"
-            className="border-blue-500/20 text-blue-100/80 hover:bg-blue-500/10 hover:text-blue-100"
+            className="border-blue-500/20 text-blue-100/80 hover:bg-blue-500/10 hover:text-blue-100 rounded-sm"
           >
             <RotateCcw className="mr-2 h-4 w-4" />
             Reset
@@ -213,7 +213,7 @@ const CodeInputForm: React.FC<{
           <Button
             type="submit"
             disabled={isLoading}
-            className="bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 hover:text-blue-300"
+            className="bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 hover:text-blue-300 rounded-sm"
           >
             {isLoading ? (
               <>
@@ -254,11 +254,11 @@ const CodeResultDisplay: React.FC<{
     <>
       {/* Description section */}
       {transformedCode.description && (
-        <Card className="bg-gray-900/60 backdrop-blur-sm border-blue-500/20 shadow-xl">
+        <Card className="bg-gray-900/60 backdrop-blur-sm border-blue-500/20 shadow-lg">
           <CardHeader className="pb-3">
             <div className="flex items-center gap-2">
               <FileText className="h-5 w-5 text-blue-400" />
-              <CardTitle>Standardization Summary</CardTitle>
+              <CardTitle className="text-lg font-medium">Standardization Summary</CardTitle>
             </div>
             {filePath && (
               <CardDescription className="text-blue-100/60">
@@ -275,20 +275,20 @@ const CodeResultDisplay: React.FC<{
       )}
 
       <div className="grid md:grid-cols-2 gap-6">
-        <Card className="bg-gray-900/60 backdrop-blur-sm border-blue-500/20 shadow-xl overflow-hidden">
+        <Card className="bg-gray-900/60 backdrop-blur-sm border-blue-500/20 shadow-lg overflow-hidden">
           <CardHeader className="pb-3 border-b border-blue-500/20">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Code className="h-5 w-5 text-blue-400" />
-                <CardTitle>Original Code</CardTitle>
+                <CardTitle className="text-lg font-medium">Original Code</CardTitle>
               </div>
-              <Badge variant="outline" className="border-blue-500/20 text-blue-100/80">
+              <Badge variant="outline" className="border-blue-500/20 text-blue-100/80 rounded-none">
                 {language}
               </Badge>
             </div>
           </CardHeader>
           <div className="relative">
-            <ScrollArea className="h-[400px] rounded-b-lg">
+            <ScrollArea className="h-[400px]">
               <SyntaxHighlighter
                 language={language}
                 style={atomDark}
@@ -306,16 +306,16 @@ const CodeResultDisplay: React.FC<{
           </div>
         </Card>
 
-        <Card className="bg-gray-900/60 backdrop-blur-sm border-blue-500/20 shadow-xl overflow-hidden">
+        <Card className="bg-gray-900/60 backdrop-blur-sm border-blue-500/20 shadow-lg overflow-hidden">
           <CardHeader className="pb-3 border-b border-blue-500/20">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Sparkles className="h-5 w-5 text-blue-400" />
-                <CardTitle>Standardized Code</CardTitle>
+                <CardTitle className="text-lg font-medium">Standardized Code</CardTitle>
               </div>
               <div className="flex items-center gap-2">
                 {transformedCode.verified && (
-                  <Badge className="bg-green-500/20 text-green-400 hover:bg-green-500/30 border-0">
+                  <Badge className="bg-green-500/20 text-green-400 hover:bg-green-500/30 border-0 rounded-none">
                     <CheckCircle className="mr-1 h-3 w-3" />
                     Verified
                   </Badge>
@@ -332,14 +332,14 @@ const CodeResultDisplay: React.FC<{
                         {copied ? <CheckCircle className="h-4 w-4 text-green-400" /> : <Copy className="h-4 w-4" />}
                       </Button>
                     </TooltipTrigger>
-                    <TooltipContent>{copied ? "Copied!" : "Copy to clipboard"}</TooltipContent>
+                    <TooltipContent className="rounded-none">{copied ? "Copied!" : "Copy to clipboard"}</TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
               </div>
             </div>
           </CardHeader>
           <div className="relative">
-            <ScrollArea className="h-[400px] rounded-b-lg">
+            <ScrollArea className="h-[400px]">
               <SyntaxHighlighter
                 language={language}
                 style={atomDark}
@@ -361,7 +361,7 @@ const CodeResultDisplay: React.FC<{
       <div className="flex justify-end mt-6">
         <Button
           onClick={handleReset}
-          className="bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 hover:text-blue-300"
+          className="bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 hover:text-blue-300 rounded-sm"
         >
           <ArrowRight className="mr-2 h-4 w-4" />
           Process New Code
@@ -371,7 +371,7 @@ const CodeResultDisplay: React.FC<{
   )
 }
 
-// Component 4: GitHub Files Display (continued)
+// Component 4: GitHub Files Display
 const GithubFilesDisplay: React.FC<{
   files: GithubFile[]
   recommendations: string[]
@@ -383,17 +383,17 @@ const GithubFilesDisplay: React.FC<{
   if (!files.length) return null
 
   return (
-    <Card className="bg-gray-900/60 backdrop-blur-sm border-blue-500/20 shadow-xl mb-6">
+    <Card className="bg-gray-900/60 backdrop-blur-sm border-blue-500/20 shadow-lg mb-6">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <FileCode className="h-5 w-5 text-blue-400" />
-            <CardTitle>Repository Files</CardTitle>
+            <CardTitle className="text-lg font-medium">Repository Files</CardTitle>
           </div>
           <Button
             onClick={standardizeAllRecommended}
             disabled={processingFiles || !recommendations.length}
-            className="bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 hover:text-blue-300"
+            className="bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 hover:text-blue-300 rounded-sm"
           >
             {processingFiles ? (
               <>
@@ -417,23 +417,23 @@ const GithubFilesDisplay: React.FC<{
           {files
             .filter(file => recommendations.includes(file.path))
             .map((file) => (
-              <div key={file.path} className="flex items-center justify-between p-3 rounded-md bg-gray-800/40 border border-blue-500/10">
+              <div key={file.path} className="flex items-center justify-between p-3 bg-gray-800/40 border border-blue-500/10">
                 <div className="flex items-center gap-2">
                   <FileText className="h-4 w-4 text-blue-400" />
                   <span className="font-medium text-blue-100">{file.path}</span>
-                  <Badge variant="outline" className="border-blue-500/20 text-blue-100/60">
+                  <Badge variant="outline" className="border-blue-500/20 text-blue-100/60 rounded-none">
                     {detectLanguage("", file.path)}
                   </Badge>
                 </div>
                 <div className="flex items-center gap-2">
                   {file.standardized && (
-                    <Badge className="bg-green-500/20 text-green-400 border-0">
+                    <Badge className="bg-green-500/20 text-green-400 border-0 rounded-none">
                       <CheckCircle className="mr-1 h-3 w-3" />
                       Standardized
                     </Badge>
                   )}
                   {file.isProcessing && (
-                    <Badge className="bg-yellow-500/20 text-yellow-400 border-0">
+                    <Badge className="bg-yellow-500/20 text-yellow-400 border-0 rounded-none">
                       <RefreshCw className="mr-1 h-3 w-3 animate-spin" />
                       Processing
                     </Badge>
@@ -442,7 +442,7 @@ const GithubFilesDisplay: React.FC<{
                     size="sm"
                     variant="ghost"
                     onClick={() => setActiveFile(file)}
-                    className="text-blue-100/60 hover:text-blue-400 hover:bg-blue-500/10"
+                    className="text-blue-100/60 hover:text-blue-400 hover:bg-blue-500/10 rounded-none"
                   >
                     View
                   </Button>
@@ -450,7 +450,7 @@ const GithubFilesDisplay: React.FC<{
                     <Button
                       size="sm"
                       onClick={() => standardizeGithubFile(file.path)}
-                      className="bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 hover:text-blue-300"
+                      className="bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 hover:text-blue-300 rounded-none"
                     >
                       Standardize
                     </Button>
@@ -470,19 +470,19 @@ const FileViewer: React.FC<{
   onClose: () => void
 }> = ({ file, onClose }) => {
   const language = detectLanguage("", file.path)
-  
+
   return (
-    <Card className="bg-gray-900/60 backdrop-blur-sm border-blue-500/20 shadow-xl">
+    <Card className="bg-gray-900/60 backdrop-blur-sm border-blue-500/20 shadow-lg">
       <CardHeader className="pb-3 border-b border-blue-500/20">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <FileText className="h-5 w-5 text-blue-400" />
-            <CardTitle className="text-lg">{file.path}</CardTitle>
+            <CardTitle className="text-lg font-medium">{file.path}</CardTitle>
           </div>
           <Button
             variant="ghost"
             onClick={onClose}
-            className="text-blue-100/60 hover:text-blue-400 hover:bg-blue-500/10"
+            className="text-blue-100/60 hover:text-blue-400 hover:bg-blue-500/10 rounded-none"
           >
             Close
           </Button>
@@ -526,7 +526,7 @@ const CodeStandardizer: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [error, setError] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<string>("input")
-  
+
   // GitHub integration state
   const [repoOwner, setRepoOwner] = useState<string>("")
   const [repoName, setRepoName] = useState<string>("")
@@ -536,28 +536,28 @@ const CodeStandardizer: React.FC = () => {
   const [activeFile, setActiveFile] = useState<GithubFile | null>(null)
   const [processingFiles, setProcessingFiles] = useState<boolean>(false)
   const [fileProgress, setFileProgress] = useState<number>(0)
-  
+
   // Detect language for Monaco editor
   const detectedLanguage = detectLanguage(code)
-  
+
   // GitHub token from environment variables
   const githubToken = import.meta.env.VITE_GITHUB_TOKEN
-  
+
   // Effect to set repo details from URL params (if available)
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
     const owner = params.get('owner')
     const repo = params.get('repo')
-    
+
     if (owner) setRepoOwner(owner)
     if (repo) setRepoName(repo)
-    
+
     // Auto-fetch if both parameters are present
     if (owner && repo) {
       fetchRepoFiles()
     }
   }, [])
-  
+
   // Handle form submission for manual code input
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -612,56 +612,56 @@ const CodeStandardizer: React.FC = () => {
     setActiveTab("input")
     setActiveFile(null)
   }
-  
+
   // Fetch repository files from GitHub using token
   const fetchRepoFiles = async () => {
     if (!repoOwner || !repoName) return
-    
+
     setFetchingFiles(true)
     setGithubFiles([])
     setRecommendedFiles([])
     setError(null)
-    
+
     try {
       // Initialize Octokit with the token
       const octokit = new Octokit({
         auth: githubToken
       })
-      
+
       // Get the latest commit
       const { data: commits } = await octokit.rest.repos.listCommits({
         owner: repoOwner,
         repo: repoName,
         per_page: 1,
       })
-      
+
       if (!commits.length) {
         setError("No commits found in this repository")
         setFetchingFiles(false)
         return
       }
-      
+
       const latestCommitSha = commits[0].sha
-      
+
       // Get the commit details with files
       const { data: commitDetails } = await octokit.rest.repos.getCommit({
         owner: repoOwner,
         repo: repoName,
         ref: latestCommitSha,
       })
-      
+
       // Filter to only include code files (not images, etc.)
       const codeFiles = commitDetails.files?.filter(file => {
         const ext = file.filename.split('.').pop()?.toLowerCase()
         return ext && ['js', 'jsx', 'ts', 'tsx', 'py', 'java', 'c', 'cpp', 'cs', 'go', 'rb', 'php', 'html', 'css', 'sass', 'scss'].includes(ext)
       })
-      
+
       if (!codeFiles?.length) {
         setError("No code files found in the latest commit")
         setFetchingFiles(false)
         return
       }
-      
+
       // Get content for each file
       const filesWithContent: GithubFile[] = await Promise.all(
         codeFiles.map(async (file) => {
@@ -672,14 +672,14 @@ const CodeStandardizer: React.FC = () => {
               path: file.filename,
               ref: latestCommitSha, // Ensure we get content from the latest commit
             })
-            
+
             // Handle file content
             let content = ""
             if ('content' in fileData && fileData.content) {
               // content = Buffer.from(fileData.content, 'base64').toString('utf-8')
               content = atob(fileData.content)
             }
-            
+
             return {
               path: file.filename,
               content: content
@@ -693,12 +693,12 @@ const CodeStandardizer: React.FC = () => {
           }
         })
       )
-      
+
       setGithubFiles(filesWithContent)
-      
+
       // Get AI recommendations using Gemini
       await getAIRecommendations(filesWithContent)
-      
+
     } catch (err) {
       console.error("Error fetching repository files:", err)
       setError("Failed to fetch repository files. Please check the repository name and try again.")
@@ -706,24 +706,24 @@ const CodeStandardizer: React.FC = () => {
       setFetchingFiles(false)
     }
   }
-  
+
   // Get AI recommendations using Google Generative AI SDK
   const getAIRecommendations = async (files: GithubFile[]) => {
     try {
       // Import the Google Generative AI SDK
       const { GoogleGenerativeAI } = await import("@google/generative-ai")
-      
+
       // Initialize the Gemini API with your API key
       const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY)
       const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" })
-      
+
       // Create a structure with filenames and first 100 characters of content
       const fileStructure = files.map(file => ({
         path: file.path,
         snippet: file.content.substring(0, 100) + "...",
         language: detectLanguage("", file.path)
       }))
-      
+
       // Create prompt to identify files that would benefit from standardization
       const prompt = `
         Analyze these code files and identify the top 3 that would most benefit from code standardization.
@@ -733,12 +733,12 @@ const CodeStandardizer: React.FC = () => {
         Files:
         ${JSON.stringify(fileStructure, null, 2)}
       `
-      
+
       // Call Gemini model
       const result = await model.generateContent(prompt)
       const response = await result.response
       const text = response.text()
-      
+
       try {
         // Extract the JSON array from the response
         const jsonMatch = text.match(/\[(.*)\]/s)
@@ -746,47 +746,47 @@ const CodeStandardizer: React.FC = () => {
           const jsonStr = jsonMatch[0]
           const recommendedPaths = JSON.parse(jsonStr)
           // Validate that we have actual file paths
-          const validPaths = recommendedPaths.filter((path: string) => 
+          const validPaths = recommendedPaths.filter((path: string) =>
             typeof path === 'string' && files.some(file => file.path === path)
           )
-          
+
           if (validPaths.length > 0) {
             setRecommendedFiles(validPaths)
             return
           }
         }
-        
+
         // Fallback to random selection if parsing fails
         throw new Error("Could not parse valid file paths from model output")
-        
+
       } catch (parseErr) {
         console.error("Error parsing Gemini response:", parseErr)
         throw parseErr
       }
-      
+
     } catch (err) {
       console.error("Error getting AI recommendations:", err)
-      
+
       // Fallback to random selection if API fails
       const randomFiles = files
         .sort(() => 0.5 - Math.random())
         .slice(0, Math.min(3, files.length))
         .map(file => file.path)
-      
+
       setRecommendedFiles(randomFiles)
     }
   }
-  
+
   // Standardize a single GitHub file
   const standardizeGithubFile = async (path: string) => {
     const fileIndex = githubFiles.findIndex(file => file.path === path)
     if (fileIndex === -1) return
-    
+
     // Mark file as processing
     const updatedFiles = [...githubFiles]
     updatedFiles[fileIndex] = { ...updatedFiles[fileIndex], isProcessing: true }
     setGithubFiles(updatedFiles)
-    
+
     try {
       const response = await axios.post<StandardizerResponse>(
         "http://127.0.0.1:8001/standardize/",
@@ -797,9 +797,9 @@ const CodeStandardizer: React.FC = () => {
           },
         }
       )
-      
+
       const parsedResponse = JSON.parse(response.data.transformed_code)
-      
+
       // Update file with standardized code
       updatedFiles[fileIndex] = {
         ...updatedFiles[fileIndex],
@@ -807,41 +807,41 @@ const CodeStandardizer: React.FC = () => {
         isProcessing: false
       }
       setGithubFiles(updatedFiles)
-      
+
       // Set active file to show result
       setActiveFile(updatedFiles[fileIndex])
-      
+
     } catch (err) {
       console.error(`Error standardizing file ${path}:`, err)
-      
+
       // Mark file as not processing
       updatedFiles[fileIndex] = { ...updatedFiles[fileIndex], isProcessing: false }
       setGithubFiles(updatedFiles)
-      
+
       setError(`Failed to standardize ${path}`)
     }
   }
-  
+
   // Standardize all recommended files
   const standardizeAllRecommended = async () => {
     if (!recommendedFiles.length) return
-    
+
     setProcessingFiles(true)
     setFileProgress(0)
-    
+
     try {
       let processedCount = 0
-      
+
       // Process each recommended file sequentially
       for (const path of recommendedFiles) {
         const fileIndex = githubFiles.findIndex(file => file.path === path)
         if (fileIndex === -1) continue
-        
+
         // Mark file as processing
         const updatedFiles = [...githubFiles]
         updatedFiles[fileIndex] = { ...updatedFiles[fileIndex], isProcessing: true }
         setGithubFiles(updatedFiles)
-        
+
         try {
           const response = await axios.post<StandardizerResponse>(
             "http://127.0.0.1:8001/standardize/",
@@ -852,9 +852,9 @@ const CodeStandardizer: React.FC = () => {
               },
             }
           )
-          
+
           const parsedResponse = JSON.parse(response.data.transformed_code)
-          
+
           // Update file with standardized code
           updatedFiles[fileIndex] = {
             ...updatedFiles[fileIndex],
@@ -862,20 +862,20 @@ const CodeStandardizer: React.FC = () => {
             isProcessing: false
           }
           setGithubFiles(updatedFiles)
-          
+
           // Update progress
           processedCount++
           setFileProgress(Math.round((processedCount / recommendedFiles.length) * 100))
-          
+
         } catch (err) {
           console.error(`Error standardizing file ${path}:`, err)
-          
+
           // Mark file as not processing
           updatedFiles[fileIndex] = { ...updatedFiles[fileIndex], isProcessing: false }
           setGithubFiles(updatedFiles)
         }
       }
-      
+
     } catch (err) {
       console.error("Error in batch processing:", err)
       setError("Failed to process all files")
@@ -884,7 +884,7 @@ const CodeStandardizer: React.FC = () => {
       setFileProgress(100)
     }
   }
-  
+
   // View standardized GitHub file
   const viewStandardizedFile = (file: GithubFile) => {
     if (file.standardized) {
@@ -917,20 +917,20 @@ const CodeStandardizer: React.FC = () => {
           fetchRepoFiles={fetchRepoFiles}
           isLoading={fetchingFiles}
         />
-        
+
         {/* GitHub Files and Recommendations */}
         {githubFiles.length > 0 && (
           <>
             {processingFiles && (
               <div className="mb-6">
-                <Progress value={fileProgress} className="h-2 bg-blue-500/10" 
+                <Progress value={fileProgress} className="h-2 bg-blue-500/10"
                   indicatorClassName="bg-blue-400" />
                 <p className="text-blue-100/60 text-sm mt-2">
                   Standardizing files: {fileProgress}% complete
                 </p>
               </div>
             )}
-            
+
             <GithubFilesDisplay
               files={githubFiles}
               recommendations={recommendedFiles}
@@ -941,7 +941,7 @@ const CodeStandardizer: React.FC = () => {
             />
           </>
         )}
-        
+
         {/* File Viewer Modal */}
         {activeFile && (
           <div className="mb-6">

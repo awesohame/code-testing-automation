@@ -3,14 +3,16 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { useAuth } from '@clerk/clerk-react';
 import { useNavigate } from 'react-router-dom';
+import { useUserData } from '@/hooks/useUserData';
 
 const Onboarding = () => {
   const navigate = useNavigate();
-  
+
   // For development, use a hardcoded clerkId
   // In production, you would get this from Clerk authentication
-  const { userId } = useAuth();
-  const clerkId = userId 
+  // const { userId } = useAuth();
+  const { user } = useUserData()
+  const clerkId = user?.clerkId
 
   const [formData, setFormData] = useState({
     clerkId: clerkId, // Include clerkId in form data
@@ -23,26 +25,26 @@ const Onboarding = () => {
     Experience: '',
     purpose: ''
   });
-  
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  
+
   const handleChange = (e) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
     });
   };
-  
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
-    
+
     try {
       // Send the data directly without token
       const response = await axios.post('http://localhost:5000/api/users/onboarding', formData);
-      
+
       console.log('Onboarding successful:', response.data);
       navigate('/dashboard'); // Redirect to dashboard after successful onboarding
     } catch (err) {
@@ -57,13 +59,13 @@ const Onboarding = () => {
     <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center p-4">
       <div className="bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md">
         <h1 className="text-2xl font-bold mb-6 text-center">Complete Your Profile</h1>
-        
+
         {error && (
           <div className="bg-red-500 bg-opacity-20 border border-red-400 text-red-100 px-4 py-3 rounded mb-4">
             {error}
           </div>
         )}
-        
+
         <form onSubmit={handleSubmit}>
           <div className="grid grid-cols-2 gap-4 mb-4">
             <div>
@@ -91,7 +93,7 @@ const Onboarding = () => {
               />
             </div>
           </div>
-          
+
           <div className="mb-4">
             <label className="block text-gray-300 mb-1" htmlFor="email">Email</label>
             <input
@@ -104,7 +106,7 @@ const Onboarding = () => {
               required
             />
           </div>
-          
+
           <div className="mb-4">
             <label className="block text-gray-300 mb-1" htmlFor="jobTitle">Job Title</label>
             <input
@@ -117,7 +119,7 @@ const Onboarding = () => {
               required
             />
           </div>
-          
+
           <div className="mb-4">
             <label className="block text-gray-300 mb-1" htmlFor="company">Company</label>
             <input
@@ -130,7 +132,7 @@ const Onboarding = () => {
               required
             />
           </div>
-          
+
           <div className="mb-4">
             <label className="block text-gray-300 mb-1" htmlFor="githubName">GitHub Username</label>
             <input
@@ -142,7 +144,7 @@ const Onboarding = () => {
               className="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
-          
+
           <div className="mb-4">
             <label className="block text-gray-300 mb-1" htmlFor="Experience">Experience Level</label>
             <select
@@ -160,7 +162,7 @@ const Onboarding = () => {
               <option value="Expert">Expert</option>
             </select>
           </div>
-          
+
           <div className="mb-6">
             <label className="block text-gray-300 mb-1" htmlFor="purpose">
               What brings you here today?
@@ -175,7 +177,7 @@ const Onboarding = () => {
               required
             ></textarea>
           </div>
-          
+
           <button
             type="submit"
             disabled={loading}

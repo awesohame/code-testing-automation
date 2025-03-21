@@ -411,20 +411,20 @@ export default function AIResearchPlanner() {
         animate={{ opacity: 1, x: 0 }}
         className="w-1/3 h-full relative"
       >
-        <div className="absolute inset-0 flex flex-col">
+        <div className="absolute inset-0 flex flex-col bg-gradient-to-br from-blue-900/10 via-transparent to-purple-900/5">
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="flex justify-between items-center px-8 py-4 border-b border-cyan-500/30 bg-[#0a0f1a] shadow-lg"
+            className="flex justify-between items-center px-8 py-6 border-b border-blue-500/30 bg-[#0a0f1a]/80 backdrop-blur-sm"
           >
-            <h2 className="text-2xl font-bold bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent flex items-center gap-2">
-              <Terminal className="w-6 h-6 text-cyan-400" />
+            <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent flex items-center gap-2">
+              <Code className="w-6 h-6 text-blue-400" />
               Developer Topics
             </h2>
           </motion.div>
 
-          <div className="flex-1 overflow-y-auto scrollbar-normal p-8 border-l border-cyan-500/20 
-            bg-gradient-to-b from-gray-900/90 via-gray-900/60 to-transparent">
+          <div className="flex-1 overflow-y-auto scrollbar-blue p-8 border-l border-blue-500/20 
+            bg-gradient-to-b from-[#0a0f1a]/90 via-[#0a0f1a]/60 to-[#0a0f1a]/30">
             <AnimatePresence>
               {isLoadingRecommendations ? (
                 <motion.div
@@ -434,7 +434,7 @@ export default function AIResearchPlanner() {
                   className="flex justify-center items-center h-32"
                 >
                   <motion.div
-                    className="w-12 h-12 border-2 border-cyan-500 rounded-full border-t-transparent"
+                    className="w-12 h-12 border-2 border-blue-500 rounded-full border-t-transparent"
                     animate={{ rotate: 360 }}
                     transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
                   />
@@ -457,23 +457,23 @@ export default function AIResearchPlanner() {
                       <Card
                         onClick={() => handleCardClick(topic)}
                         className="rounded-xl overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer 
-                          bg-gradient-to-br from-[#0f2d4a] to-[#1a1f3c] border border-cyan-500/40 relative group"
+                          bg-gradient-to-br from-[#0f172a] to-[#1a1a35] border border-blue-500/40 relative group"
                       >
                         <motion.div
-                          className="absolute inset-0 bg-gradient-to-r from-cyan-500/10 to-purple-500/10 opacity-0 group-hover:opacity-100"
+                          className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-purple-500/10 opacity-0 group-hover:opacity-100"
                           transition={{ duration: 0.3 }}
                         />
 
-                        <CardHeader className="bg-gradient-to-r from-cyan-950 to-blue-950 p-4 relative">
-                          <CardTitle className="text-2xl font-bold text-[#f8fafc] flex items-center gap-3">
+                        <CardHeader className="bg-gradient-to-r from-blue-900 to-purple-900 p-4 relative">
+                          <CardTitle className="text-xl font-bold text-[#f8fafc] flex items-center gap-3">
                             {topic.icon}
-                            <span className="bg-gradient-to-r from-cyan-300 to-blue-300 bg-clip-text text-transparent">
+                            <span className="bg-gradient-to-r from-blue-300 to-purple-300 bg-clip-text text-transparent">
                               {topic.title}
                             </span>
                           </CardTitle>
                         </CardHeader>
 
-                        <CardContent className="p-6 bg-gradient-to-b from-cyan-900/20 to-cyan-950/20">
+                        <CardContent className="p-6 bg-gradient-to-b from-blue-900/10 to-purple-900/10">
                           <ul className="space-y-3">
                             {topic.subtopics.map((t, i) => (
                               <motion.li
@@ -481,9 +481,9 @@ export default function AIResearchPlanner() {
                                 initial={{ opacity: 0, x: -20 }}
                                 animate={{ opacity: 1, x: 0 }}
                                 transition={{ delay: i * 0.1 }}
-                                className="flex items-center text-white/90 text-lg group/item"
+                                className="flex items-center text-blue-100/90 text-lg group/item"
                               >
-                                <ChevronRight className="w-4 h-4 mr-2 text-cyan-400 group-hover/item:translate-x-1 transition-transform" />
+                                <ChevronRight className="w-4 h-4 mr-2 text-blue-400 group-hover/item:translate-x-1 transition-transform" />
                                 {t}
                               </motion.li>
                             ))}

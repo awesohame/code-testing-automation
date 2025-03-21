@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Sparkle } from "lucide-react";
+import { useUserData } from "@/hooks/useUserData";
 
 function SpinningLogo() {
   const groupRef = useRef<THREE.Group>(null);
@@ -137,7 +138,7 @@ export default function Landing() {
   const navigate = useNavigate();
   const [isHoveredPrimary, setIsHoveredPrimary] = useState(false);
   const [isHoveredSecondary, setIsHoveredSecondary] = useState(false);
-
+  const { user } = useUserData()
   // Animation variants
   const heroTextVariants = {
     initial: { opacity: 0, y: 20 },
@@ -205,18 +206,18 @@ export default function Landing() {
           variants={logoPillVariants}
         >
           <div className="flex justify-center items-center gap-2">
-          <Sparkle className="text-blue-400" />
-          <motion.span
-            className="text-2xl font-bold text-blue-400"
-            whileHover={{
-              textShadow: "0px 0px 8px rgba(96, 165, 250, 0.7)",
-            }}
-          >
-            Codeवेद
-          </motion.span>
+            <Sparkle className="text-blue-400" />
+            <motion.span
+              className="text-2xl font-bold text-blue-400"
+              whileHover={{
+                textShadow: "0px 0px 8px rgba(96, 165, 250, 0.7)",
+              }}
+            >
+              Codeवेद
+            </motion.span>
           </div>
         </motion.div>
-        
+
         <motion.h1
           className="text-6xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-[#f8fafc] to-blue-400"
           initial="initial"
@@ -237,7 +238,7 @@ export default function Landing() {
         </motion.h2>
         <div className="flex justify-center gap-5">
           <motion.button
-            onClick={() => navigate("/sign-up")}
+            onClick={() => navigate(user ? '/dashboard' : '/sign-in')}
             className="bg-blue-500/25 border border-blue-500/30 text-blue-400 font-bold py-3 px-8 rounded-lg relative overflow-hidden"
             initial="initial"
             animate="animate"
