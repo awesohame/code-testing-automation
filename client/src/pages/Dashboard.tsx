@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts"
+import { XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line } from "recharts"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Activity, GitBranch, Check, Clock, BarChart2 } from "lucide-react"
 import { useAuth } from "@clerk/clerk-react"
@@ -58,11 +58,11 @@ const TestingDashboard = () => {
 
   // For demo purposes, using enhanced sample data
   const displayWeeklyData = [
-    { week: "Week 8", unit: 3, performance: 1 },
-    { week: "Week 9", unit: 8, performance: 4 },
-    { week: "Week 10", unit: 5, performance: 2 },
-    { week: "Week 11", unit: 10, performance: 6 },
-    { week: "Week 12", unit: 7, performance: 3 },
+    { week: "Week 1", unit: 3, performance: 1 },
+    { week: "Week 2", unit: 8, performance: 4 },
+    { week: "Week 3", unit: 5, performance: 2 },
+    { week: "Week 4", unit: 10, performance: 6 },
+    { week: "Week 5", unit: 7, performance: 3 },
   ]
 
   if (loading) {
@@ -130,101 +130,143 @@ const TestingDashboard = () => {
       </div>
 
       {/* Graph Section */}
-      <Card className="mb-8 bg-gray-900/60 backdrop-blur-md border border-blue-500/20 shadow-lg">
-        <CardHeader className="border-b border-blue-500/20 pb-4">
-          <div className="flex items-center">
-            <BarChart2 className="mr-2 h-5 w-5 text-blue-400" />
-            <CardTitle className="text-[#f8fafc]">Weekly Testing Activity</CardTitle>
-          </div>
-        </CardHeader>
-        <CardContent className="pt-6">
-          <ChartContainer
-            config={{
-              unit: {
-                label: "Unit Tests",
-                color: "hsl(262, 83%, 68%)", // purple
-              },
-              performance: {
-                label: "Performance Tests",
-                color: "hsl(152, 69%, 65%)", // green
-              },
-            }}
-            className="min-h-[300px]"
-          >
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={displayWeeklyData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(59, 130, 246, 0.1)" />
-                <XAxis
-                  dataKey="week"
-                  tick={{ fill: "#f8fafc", fontSize: 12 }}
-                  axisLine={{ stroke: "rgba(59, 130, 246, 0.2)" }}
-                />
-                <YAxis tick={{ fill: "#f8fafc", fontSize: 12 }} axisLine={{ stroke: "rgba(59, 130, 246, 0.2)" }} />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: "rgba(15, 23, 42, 0.95)",
-                    borderColor: "rgba(59, 130, 246, 0.3)",
-                    color: "#f8fafc",
-                    borderRadius: "8px",
-                    boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)",
-                    padding: "12px",
-                  }}
-                  itemStyle={{ color: "#f8fafc" }}
-                  labelStyle={{
-                    color: "#f8fafc",
-                    fontWeight: "bold",
-                    marginBottom: "8px",
-                    borderBottom: "1px solid rgba(59, 130, 246, 0.2)",
-                    paddingBottom: "6px",
-                  }}
-                  cursor={{ fill: "rgba(59, 130, 246, 0.05)" }}
-                />
-                <Legend
-                  wrapperStyle={{ color: "#f8fafc", paddingTop: "15px" }}
-                  formatter={(value) => <span className="text-blue-100/80">{value}</span>}
-                  iconType="circle"
-                />
-                <Bar dataKey="unit" name="Unit Tests" fill="var(--color-unit)" radius={[4, 4, 0, 0]}>
-                  {displayWeeklyData.map((entry, index) => (
-                    <g key={`cell-${index}`}>
-                      <rect
-                        x={0}
-                        y={0}
-                        width="100%"
-                        height="100%"
-                        fill="var(--color-unit)"
-                        className="transition-opacity duration-300 hover:opacity-80"
-                      />
-                    </g>
-                  ))}
-                </Bar>
-                <Bar
-                  dataKey="performance"
-                  name="Performance Tests"
-                  fill="var(--color-performance)"
-                  radius={[0, 0, 4, 4]}
-                >
-                  {displayWeeklyData.map((entry, index) => (
-                    <g key={`cell-${index}`}>
-                      <rect
-                        x={0}
-                        y={0}
-                        width="100%"
-                        height="100%"
-                        fill="var(--color-performance)"
-                        className="transition-opacity duration-300 hover:opacity-80"
-                      />
-                    </g>
-                  ))}
-                </Bar>
-                <ChartTooltip
-                  content={<ChartTooltipContent className="bg-gray-900/95 border border-blue-500/30 shadow-lg" />}
-                />
-              </BarChart>
-            </ResponsiveContainer>
-          </ChartContainer>
-        </CardContent>
-      </Card>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+        {/* Unit Tests Line Chart */}
+        <Card className="bg-gray-900/60 backdrop-blur-md border border-blue-500/20 shadow-lg">
+          <CardHeader className="border-b border-blue-500/20 pb-4">
+            <div className="flex items-center">
+              <BarChart2 className="mr-2 h-5 w-5 text-blue-400" />
+              <CardTitle className="text-[#f8fafc]">Unit Tests</CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent className="pt-6">
+            <ChartContainer
+              config={{
+                unit: {
+                  label: "Unit Tests",
+                  color: "hsl(262, 83%, 68%)", // purple
+                },
+              }}
+              className="min-h-[300px]"
+            >
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart data={displayWeeklyData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(59, 130, 246, 0.1)" />
+                  <XAxis
+                    dataKey="week"
+                    tick={{ fill: "#f8fafc", fontSize: 12 }}
+                    axisLine={{ stroke: "rgba(59, 130, 246, 0.2)" }}
+                  />
+                  <YAxis tick={{ fill: "#f8fafc", fontSize: 12 }} axisLine={{ stroke: "rgba(59, 130, 246, 0.2)" }} />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "rgba(15, 23, 42, 0.95)",
+                      borderColor: "rgba(59, 130, 246, 0.3)",
+                      color: "#f8fafc",
+                      borderRadius: "8px",
+                      boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)",
+                      padding: "12px",
+                    }}
+                    itemStyle={{ color: "#f8fafc" }}
+                    labelStyle={{
+                      color: "#f8fafc",
+                      fontWeight: "bold",
+                      marginBottom: "8px",
+                      borderBottom: "1px solid rgba(59, 130, 246, 0.2)",
+                      paddingBottom: "6px",
+                    }}
+                  />
+                  <Legend
+                    wrapperStyle={{ color: "#f8fafc", paddingTop: "15px" }}
+                    formatter={(value) => <span className="text-blue-100/80">{value}</span>}
+                    iconType="circle"
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="unit"
+                    name="Unit Tests"
+                    stroke="var(--color-unit)"
+                    strokeWidth={2}
+                    dot={{ fill: "var(--color-unit)", r: 4 }}
+                    activeDot={{ r: 6, fill: "var(--color-unit)" }}
+                  />
+                  <ChartTooltip
+                    content={<ChartTooltipContent className="bg-gray-900/95 border border-blue-500/30 shadow-lg" />}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </ChartContainer>
+          </CardContent>
+        </Card>
+
+        {/* Performance Tests Line Chart */}
+        <Card className="bg-gray-900/60 backdrop-blur-md border border-blue-500/20 shadow-lg">
+          <CardHeader className="border-b border-blue-500/20 pb-4">
+            <div className="flex items-center">
+              <Activity className="mr-2 h-5 w-5 text-green-400" />
+              <CardTitle className="text-[#f8fafc]">Performance Tests</CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent className="pt-6">
+            <ChartContainer
+              config={{
+                performance: {
+                  label: "Performance Tests",
+                  color: "hsl(152, 69%, 65%)", // green
+                },
+              }}
+              className="min-h-[300px]"
+            >
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart data={displayWeeklyData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(59, 130, 246, 0.1)" />
+                  <XAxis
+                    dataKey="week"
+                    tick={{ fill: "#f8fafc", fontSize: 12 }}
+                    axisLine={{ stroke: "rgba(59, 130, 246, 0.2)" }}
+                  />
+                  <YAxis tick={{ fill: "#f8fafc", fontSize: 12 }} axisLine={{ stroke: "rgba(59, 130, 246, 0.2)" }} />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "rgba(15, 23, 42, 0.95)",
+                      borderColor: "rgba(59, 130, 246, 0.3)",
+                      color: "#f8fafc",
+                      borderRadius: "8px",
+                      boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)",
+                      padding: "12px",
+                    }}
+                    itemStyle={{ color: "#f8fafc" }}
+                    labelStyle={{
+                      color: "#f8fafc",
+                      fontWeight: "bold",
+                      marginBottom: "8px",
+                      borderBottom: "1px solid rgba(59, 130, 246, 0.2)",
+                      paddingBottom: "6px",
+                    }}
+                  />
+                  <Legend
+                    wrapperStyle={{ color: "#f8fafc", paddingTop: "15px" }}
+                    formatter={(value) => <span className="text-blue-100/80">{value}</span>}
+                    iconType="circle"
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="performance"
+                    name="Performance Tests"
+                    stroke="var(--color-performance)"
+                    strokeWidth={2}
+                    dot={{ fill: "var(--color-performance)", r: 4 }}
+                    activeDot={{ r: 6, fill: "var(--color-performance)" }}
+                  />
+                  <ChartTooltip
+                    content={<ChartTooltipContent className="bg-gray-900/95 border border-blue-500/30 shadow-lg" />}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </ChartContainer>
+          </CardContent>
+        </Card>
+      </div>
 
       {/* History Section */}
       <Card className="bg-gray-900/60 backdrop-blur-md border border-blue-500/20 shadow-lg">
