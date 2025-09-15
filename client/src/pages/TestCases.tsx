@@ -12,7 +12,7 @@ import { GitHubContentItem } from "@/types";
 import CodeAnalyzerPanel from "@/components/CodeAnalyzerPanel";
 
 const TestCaseDashboard: React.FC = () => {
-  const repoOwner = "anish3333", repoName = "testing";
+  const repoOwner = "awesohame", repoName = "testing";
   const [structure, setStructure] = useState<GitHubContentItem[]>([]);
   const [selectedFile, setSelectedFile] = useState<GitHubContentItem | null>(
     null
@@ -140,11 +140,10 @@ const TestCaseDashboard: React.FC = () => {
           <li key={item.path} className="my-1">
             <div
               className={`flex items-center py-1 px-2 rounded cursor-pointer 
-                                ${
-                                  selectedFile?.path === item.path
-                                    ? "bg-gray-700"
-                                    : "hover:bg-gray-700"
-                                }
+                                ${selectedFile?.path === item.path
+                  ? "bg-gray-700"
+                  : "hover:bg-gray-700"
+                }
                             `}
               onClick={() => handleFileClick(item)}
             >
@@ -158,18 +157,16 @@ const TestCaseDashboard: React.FC = () => {
                 </span>
               )}
               <span
-                className={`mr-2 ${
-                  item.type === "dir" ? "text-yellow-400" : "text-blue-400"
-                }`}
+                className={`mr-2 ${item.type === "dir" ? "text-yellow-400" : "text-blue-400"
+                  }`}
               >
                 {item.type === "dir" ? <FaFolder /> : <FaFile />}
               </span>
               <span
-                className={`${
-                  item.type === "dir"
-                    ? "font-medium text-gray-300"
-                    : "text-gray-400"
-                } truncate`}
+                className={`${item.type === "dir"
+                  ? "font-medium text-gray-300"
+                  : "text-gray-400"
+                  } truncate`}
               >
                 {item.name}
               </span>

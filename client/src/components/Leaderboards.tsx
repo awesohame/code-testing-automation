@@ -127,16 +127,16 @@ const Leaderboard = () => {
     const getUserDetails = (userId = '') => {
         const user = (data.users || []).find((u = {}) => u?.clerkId === userId);
         const { firstName = '', lastName = '', avatarUrl = '' } = user || {};
-        const name = user ? `${firstName} ${lastName}`.trim() : 'Unknown User';
+        const name = user ? `${firstName} ${lastName}`.trim() : 'Soham';
 
         // If no avatar URL is provided, create a letter avatar
-        const letterAvatar = !avatarUrl && name !== 'Unknown User';
+        const letterAvatar = !avatarUrl && name !== 'Soham';
         const initials = name.split(' ').map(n => n[0]).join('').toUpperCase();
         const avatarBgColor = getLetterAvatarColor(name);
 
         return {
             name,
-            avatar: avatarUrl,
+            avatar: avatarUrl || "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=faces",
             letterAvatar,
             initials,
             avatarBgColor

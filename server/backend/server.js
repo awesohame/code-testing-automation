@@ -41,11 +41,11 @@ connectDB().then(() => {
   console.log("Database Connected");
 })
 // Only set up routes after DB connection is established
-const testRoutes = require("./routes/testRoutes");
-const extractApiRoutes = require("./routes/extractApiRoutes");
-const testScriptRoutes = require("./routes/testScriptRoutes");
-const webhookRoutes = require('./routes/webhookRoutes');
-const userRoutes = require('./routes/userRoutes');
+const testRoutes = require("./routes/testRoutes.js");
+const extractApiRoutes = require("./routes/extractApiRoutes.js");
+const testScriptRoutes = require("./routes/testScriptRoutes.js");
+const webhookRoutes = require('./routes/webhookRoutes.js');
+const userRoutes = require('./routes/userRoutes.js');
 const loadTestRouter = require('./routes/loadTestRoutes.js')
 const testGenerationRoutes = require('./routes/testGenerationRoutes.js')
 const managerRoutes = require('./routes/managerRoutes.js');
